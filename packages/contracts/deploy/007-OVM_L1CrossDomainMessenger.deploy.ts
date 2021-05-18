@@ -16,9 +16,10 @@ const deployFn: DeployFunction = async (hre) => {
     }
   )
 
+  const seigManagerAddress = "0x0000000000000000000000000000000000000000";
   const result = await deploy('OVM_L1CrossDomainMessenger', {
     from: deployer,
-    args: [],
+    args: [seigManagerAddress],
     log: true,
   })
 

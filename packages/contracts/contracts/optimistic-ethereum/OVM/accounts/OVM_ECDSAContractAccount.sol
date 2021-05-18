@@ -36,6 +36,7 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
     // to and including the CALL/CREATE which forms the entrypoint of the transaction.
     uint256 constant EXECUTION_VALIDATION_GAS_OVERHEAD = 25000;
     OVM_ETH constant ovmETH = OVM_ETH(0x4200000000000000000000000000000000000006);
+    OVM_TON constant ovmTON = OVM_ETH(0x4200000000000000000000000000000000000100);
 
 
     /********************
@@ -114,13 +115,24 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
         // );
 
         // Transfer fee to relayer.
-        require(
-            ovmETH.transfer(
-                msg.sender,
-                SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
-            ),
-            "Fee was not transferred to relayer."
-        );
+        // TODO: add more tokens
+        if (decodedTx.isTONFee) {
+            require(
+                ovmTON.transfer(
+                    msg.sender,
+                    SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
+                ),
+                "Fee was not transferred to relayer."
+            );
+        } else {
+            require(
+                ovmETH.transfer(
+                    msg.sender,
+                    SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
+                ),
+                "Fee was not transferred to relayer."
+            );
+        }
 
         // Contract creations are signalled by sending a transaction to the zero address.
         if (decodedTx.to == address(0)) {

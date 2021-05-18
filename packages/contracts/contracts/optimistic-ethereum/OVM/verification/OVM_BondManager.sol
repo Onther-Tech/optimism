@@ -8,6 +8,10 @@ import { Lib_AddressResolver } from "../../libraries/resolver/Lib_AddressResolve
 import { iOVM_BondManager, Errors, ERC20 } from "../../iOVM/verification/iOVM_BondManager.sol";
 import { iOVM_FraudVerifier } from "../../iOVM/verification/iOVM_FraudVerifier.sol";
 
+/* Tokamak Network Integration */
+import { ISeigManager } from "../../tokamak-network/interfaces/ISeigManager.sol";
+import { TokamakConnector } from "../../tokamak-network/TokamakConnector.sol";
+
 /**
  * @title OVM_BondManager
  * @dev The Bond Manager contract handles deposits in the form of an ERC20 token from bonded
@@ -18,7 +22,7 @@ import { iOVM_FraudVerifier } from "../../iOVM/verification/iOVM_FraudVerifier.s
  * Compiler used: solc
  * Runtime target: EVM
  */
-contract OVM_BondManager is iOVM_BondManager, Lib_AddressResolver {
+contract OVM_BondManager is TokamakConnector, iOVM_BondManager, Lib_AddressResolver {
 
     /****************************
      * Constants and Parameters *
@@ -53,6 +57,11 @@ contract OVM_BondManager is iOVM_BondManager, Lib_AddressResolver {
     /// for posting witnesses
     mapping(bytes32 => Rewards) public witnessProviders;
 
+    /********************************************
+     * Contract Variables: Tokamak Network integration  *
+     *******************************************/
+
+    //ISeigManager public override seigManager;
 
     /***************
      * Constructor *
@@ -62,17 +71,24 @@ contract OVM_BondManager is iOVM_BondManager, Lib_AddressResolver {
     /// and with the Address Manager
     constructor(
         ERC20 _token,
-        address _libAddressManager
+        address _libAddressManager,
+        address _seigManager
     )
         Lib_AddressResolver(_libAddressManager)
+        TokamakConnector(_seigManager)
     {
         token = _token;
+        //seigManager = ISeigManager(_seigManager);
     }
 
 
     /********************
      * Public Functions *
      ********************/
+
+    /*function setSeigManager(address _seigManager) override external {
+        seigManager = ISeigManager(_seigManager);
+    }*/
 
     /// Adds `who` to the list of witnessProviders for the provided `preStateRoot`.
     function recordGasSpent(bytes32 _preStateRoot, bytes32 _txHash, address who, uint256 gasSpent) override public {
@@ -167,6 +183,8 @@ contract OVM_BondManager is iOVM_BondManager, Lib_AddressResolver {
             token.transfer(msg.sender, requiredCollateral),
             Errors.ERC20_ERR
         );
+
+        // tokamak
     }
 
     /// Claims the user's reward for the witnesses they provided for the earliest
@@ -194,6 +212,9 @@ contract OVM_BondManager is iOVM_BondManager, Lib_AddressResolver {
 
         // transfer
         require(token.transfer(msg.sender, amount), Errors.ERC20_ERR);
+
+        // tokamak
+        claimReward(msg.sender, rewardForChallenge);
     }
 
     /// Checks if the user is collateralized

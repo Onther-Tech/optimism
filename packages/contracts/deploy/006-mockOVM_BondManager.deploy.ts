@@ -16,9 +16,11 @@ const deployFn: DeployFunction = async (hre) => {
     }
   )
 
+  const seigManagerAddress = "0x0000000000000000000000000000000000000000";
+  const layer2RegistryAddress = "0x0000000000000000000000000000000000000000";
   const result = await deploy('mockOVM_BondManager', {
     from: deployer,
-    args: [Lib_AddressManager.address],
+    args: [Lib_AddressManager.address, seigManagerAddress],
     log: true,
   })
 

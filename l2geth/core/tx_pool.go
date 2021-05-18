@@ -563,9 +563,15 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// Transactor should have enough funds to cover the costs
 	// cost == V + GP * GL
 	if vm.UsingOVM {
-		if pool.currentState.GetOVMBalance(from).Cmp(tx.Cost()) < 0 {
-			return ErrInsufficientFunds
-		}
+        if tx.isTONFee() {
+            if pool.currentState.GetTONBalance(from).Cmp(tx.Cost()) < 0 {
+                return ErrInsufficientFunds
+            }
+        } else {
+            if pool.currentState.GetOVMBalance(from).Cmp(tx.Cost()) < 0 {
+                return ErrInsufficientFunds
+            }
+        }
 	} else {
 		if pool.currentState.GetBalance(from).Cmp(tx.Cost()) < 0 {
 			return ErrInsufficientFunds
