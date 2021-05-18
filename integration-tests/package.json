@@ -20,6 +20,7 @@
     "@eth-optimism/contracts": "^0.3.5",
     "@eth-optimism/core-utils": "^0.4.5",
     "@eth-optimism/hardhat-ovm": "^0.2.2",
+    "@eth-optimism/watcher": "^0.0.1-alpha.9",
     "@ethersproject/providers": "^5.0.24",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
