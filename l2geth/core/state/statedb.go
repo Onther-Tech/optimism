@@ -279,6 +279,18 @@ func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
 	return slot.Big()
 }
 
+func (s *StateDB) GetTONBalance(addr common.Address) *big.Int {
+	eth := common.HexToAddress("0x4200000000000000000000000000000000000100")
+	position := big.NewInt(5)
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(common.LeftPadBytes(addr.Bytes(), 32))
+	hasher.Write(common.LeftPadBytes(position.Bytes(), 32))
+	digest := hasher.Sum(nil)
+	key := common.BytesToHash(digest)
+	slot := s.GetState(eth, key)
+	return slot.Big()
+}
+
 func (s *StateDB) GetNonce(addr common.Address) uint64 {
 	stateObject := s.getStateObject(addr)
 	if stateObject != nil {
