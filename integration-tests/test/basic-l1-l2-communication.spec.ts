@@ -10,6 +10,7 @@ import l1SimpleStorageJson from '../artifacts/contracts/SimpleStorage.sol/Simple
 import l2SimpleStorageJson from '../artifacts-ovm/contracts/SimpleStorage.sol/SimpleStorage.json'
 import l2ReverterJson from '../artifacts-ovm/contracts/Reverter.sol/Reverter.json'
 import { OptimismEnv } from './shared/env'
+import { getFeeToken } from './shared/utils'
 
 describe('Basic L1<>L2 Communication', async () => {
   let Factory__L1SimpleStorage: ContractFactory

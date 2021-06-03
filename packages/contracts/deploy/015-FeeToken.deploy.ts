@@ -3,6 +3,7 @@ import { DeployFunction } from 'hardhat-deploy/dist/types'
 
 /* Imports: Internal */
 import { getDeployedContract } from '../src/hardhat-deploy-ethers'
+import { predeploys } from '../src/predeploys'
 
 const deployFn: DeployFunction = async (hre) => {
   const { deploy } = hre.deployments
@@ -16,11 +17,13 @@ const deployFn: DeployFunction = async (hre) => {
     }
   )
 
-  const seigManagerAddress = "0x0000000000000000000000000000000000000000";
-  const layer2RegistryAddress = "0x0000000000000000000000000000000000000000";
-  const result = await deploy('mockOVM_BondManager', {
+  const l1MessengerAddress = Lib_AddressManager.getAddress(
+    'OVM_L1CrossDomainMessenger'
+  )
+
+  const result = await deploy('FeeToken', {
     from: deployer,
-    args: [Lib_AddressManager.address],
+    args: [],
     log: true,
   })
 
@@ -28,10 +31,11 @@ const deployFn: DeployFunction = async (hre) => {
     return
   }
 
-  await Lib_AddressManager.setAddress('OVM_BondManager', result.address)
+  console.log(`result.address: ${result.address}`)
+  await Lib_AddressManager.setAddress('FeeToken', result.address)
 }
 
 deployFn.dependencies = ['Lib_AddressManager']
-deployFn.tags = ['mockOVM_BondManager']
+deployFn.tags = ['OVM_L1ERC20Gateway']
 
 export default deployFn

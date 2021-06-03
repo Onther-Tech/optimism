@@ -42,7 +42,7 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
     // to and including the CALL/CREATE which forms the entrypoint of the transaction.
     uint256 constant EXECUTION_VALIDATION_GAS_OVERHEAD = 25000;
     OVM_ETH constant ovmETH = OVM_ETH(0x4200000000000000000000000000000000000006);
-    OVM_TON constant ovmTON = OVM_ETH(0x4200000000000000000000000000000000000100);
+    //OVM_TON constant ovmTON = OVM_ETH(0x4200000000000000000000000000000000000100);
 
 
     /********************
