@@ -65,6 +65,10 @@ export const makeContractDeployConfig = async (
   }
 
   return {
+    FeeToken: {
+      factory: getContractFactory('FeeToken'),
+      params: [],
+    },
     OVM_L2CrossDomainMessenger: {
       factory: getContractFactory('OVM_L2CrossDomainMessenger'),
       params: [AddressManager.address],
@@ -107,17 +111,17 @@ export const makeContractDeployConfig = async (
         )
       },
     },
-    OVM_L1ETHGateway: {
-      factory: getContractFactory('OVM_L1ETHGateway'),
+    OVM_L1ERC20Gateway: {
+      factory: getContractFactory('OVM_L1ERC20Gateway'),
       params: [],
     },
-    Proxy__OVM_L1ETHGateway: {
+    Proxy__OVM_L1ERC20Gateway: {
       factory: getContractFactory('Lib_ResolvedDelegateProxy'),
-      params: [AddressManager.address, 'OVM_L1ETHGateway'],
+      params: [AddressManager.address, 'OVM_L1ERC20Gateway'],
       afterDeploy: async (contracts): Promise<void> => {
-        const l1EthGateway = getContractFactory('OVM_L1ETHGateway')
+        const l1EthGateway = getContractFactory('OVM_L1ERC20Gateway')
           .connect(config.deploymentSigner)
-          .attach(contracts.Proxy__OVM_L1ETHGateway.address)
+          .attach(contracts.Proxy__OVM_L1ERC20Gateway.address)
         await _sendTx(
           l1EthGateway.initialize(
             AddressManager.address,

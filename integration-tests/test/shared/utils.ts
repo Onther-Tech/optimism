@@ -58,22 +58,22 @@ export const getAddressManager = (provider: any) => {
 
 // Gets the gateway using the proxy if available
 export const getGateway = async (wallet: Wallet, AddressManager: Contract) => {
-  const l1GatewayInterface = getContractInterface('OVM_L1ETHGateway')
+  const l1GatewayInterface = getContractInterface('OVM_L1ERC20Gateway')
   const ProxyGatewayAddress = await AddressManager.getAddress(
-    'Proxy__OVM_L1ETHGateway'
+    'Proxy__OVM_L1ERC20Gateway'
   )
   const addressToUse =
     ProxyGatewayAddress !== constants.AddressZero
       ? ProxyGatewayAddress
-      : await AddressManager.getAddress('OVM_L1ETHGateway')
+      : await AddressManager.getAddress('OVM_L1ERC20Gateway')
 
-  const OVM_L1ETHGateway = new Contract(
+  const OVM_L1ERC20Gateway = new Contract(
     addressToUse,
     l1GatewayInterface,
     wallet
   )
 
-  return OVM_L1ETHGateway
+  return OVM_L1ERC20Gateway
 }
 
 export const getOvmEth = (wallet: Wallet) => {
@@ -84,6 +84,20 @@ export const getOvmEth = (wallet: Wallet) => {
   )
 
   return OVM_ETH
+}
+
+export const getFeeToken = async (wallet: Wallet, AddressManager: Contract) => {
+  const feeTokenAddress = await AddressManager.getAddress(
+    'FeeToken'
+  )
+
+  const feeToken = new Contract(
+    feeTokenAddress,
+    getContractInterface('FeeToken'),
+    wallet
+  )
+
+  return feeToken
 }
 
 export const fundUser = async (

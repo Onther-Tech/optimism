@@ -51,6 +51,19 @@ contract OVM_L1ERC20Gateway is Abs_L1TokenGateway {
         l1ERC20 = _l1ERC20;
     }
 
+    function initialize(
+        iOVM_ERC20 _l1ERC20,
+        address _l2DepositedERC20,
+        address _l1messenger
+    )
+        external
+    {
+        require(address(l1ERC20) == address(0), "Contract has already been initialized");
+        l1ERC20 = _l1ERC20;
+        l2DepositedToken = _l2DepositedERC20;
+        messenger = _l1messenger;
+    }
+
 
     /**************
      * Accounting *

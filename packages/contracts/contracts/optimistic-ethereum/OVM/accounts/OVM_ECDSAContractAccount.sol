@@ -36,7 +36,7 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
     // to and including the CALL/CREATE which forms the entrypoint of the transaction.
     uint256 constant EXECUTION_VALIDATION_GAS_OVERHEAD = 25000;
     OVM_ETH constant ovmETH = OVM_ETH(0x4200000000000000000000000000000000000006);
-    OVM_TON constant ovmTON = OVM_ETH(0x4200000000000000000000000000000000000100);
+    //OVM_TON constant ovmTON = OVM_ETH(0x4200000000000000000000000000000000000100);
 
 
     /********************
@@ -89,6 +89,19 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
             isEthSign
         );
 
+        /*address feeToken;
+        uint256 dataLength = decodedTx.data.length;
+        assembly {
+            //feeToken := mload(add(decodedTx.data, dataLength))
+            let data := mload(add(decodedTx, 148))
+            feeToken := mload(add(data, dataLength))
+            //let len := mload(decodedTx.data)
+
+            mstore(data, sub(dataLength, 20))
+        }
+        //address feeToken = address(decodedTx.data[decodedTx.data.length - 32:]);
+        //decodedTx.data = decodedTx.data[:decodedTx.data.length - 32];*/
+
         // Grab the chain ID of the current network.
         uint256 chainId;
         assembly {
@@ -116,23 +129,16 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
 
         // Transfer fee to relayer.
         // TODO: add more tokens
-        if (decodedTx.isTONFee) {
-            require(
-                ovmTON.transfer(
-                    msg.sender,
-                    SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
-                ),
-                "Fee was not transferred to relayer."
-            );
-        } else {
-            require(
-                ovmETH.transfer(
-                    msg.sender,
-                    SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
-                ),
-                "Fee was not transferred to relayer."
-            );
-        }
+        /*if (feeToken == address(0x0)) {
+            feeToken = 0x4200000000000000000000000000000000000006;
+        }*/
+        require(
+            ovmETH.transfer(
+                msg.sender,
+                SafeMath.mul(decodedTx.gasLimit, decodedTx.gasPrice)
+            ),
+            "Fee was not transferred to relayer."
+        );
 
         // Contract creations are signalled by sending a transaction to the zero address.
         if (decodedTx.to == address(0)) {

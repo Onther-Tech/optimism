@@ -91,7 +91,7 @@ library Lib_OVMCodec {
         uint256 gasLimit;
         address to;
         uint256 value;
-        bytes data;
+        bytes data; // data field contains the token address which will be paid as fee
         uint256 chainId;
     }
 
