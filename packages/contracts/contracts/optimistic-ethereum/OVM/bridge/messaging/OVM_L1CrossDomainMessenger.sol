@@ -21,8 +21,6 @@ import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/O
 import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
-import { TokamakConnector } from "../../../tokamak-network/TokamakConnector.sol";
-
 /**
  * @title OVM_L1CrossDomainMessenger
  * @dev The L1 Cross Domain Messenger contract sends messages from L1 to L2, and relays messages
@@ -38,8 +36,7 @@ contract OVM_L1CrossDomainMessenger is
         Lib_AddressResolver,
         OwnableUpgradeable,
         PausableUpgradeable,
-        ReentrancyGuardUpgradeable,
-        TokamakConnector
+        ReentrancyGuardUpgradeable
 {
 
     /**********
@@ -69,9 +66,8 @@ contract OVM_L1CrossDomainMessenger is
      * We pass the zero address to the address resolver just to satisfy the constructor.
      * We still need to set this value in initialize().
      */
-    constructor(address _seigManager)
+    constructor()
         Lib_AddressResolver(address(0))
-        TokamakConnector(_seigManager)
     {}
 
     /**********************
@@ -226,9 +222,6 @@ contract OVM_L1CrossDomainMessenger is
             )
         );
         relayedMessages[relayId] = true;
-
-        // tokamak
-        claimReward(msg.sender, rewardForRelay);
     }
 
     /**

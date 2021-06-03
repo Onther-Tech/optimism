@@ -35,11 +35,11 @@ contract TokamakConnector is ITokamakConnector, ILayer2 {
         rewardVault = IRewardVault(_newRewardVault);
     }
 
-    function setChallengeReward(address _rewardForChallenge) external override {
+    function setChallengeReward(uint256 _rewardForChallenge) external override {
         rewardForChallenge = _rewardForChallenge;
     }
 
-    function setRelayReward(address _rewardForRelay) external override {
+    function setRelayReward(uint256 _rewardForRelay) external override {
         rewardForRelay = _rewardForRelay;
     }
 
