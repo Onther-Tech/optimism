@@ -31,7 +31,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.geth
           push: true
-          tags: ethereumoptimism/l2geth:dev-latest
+          tags: onthertech/optimism.l2geth:dev-latest
 
   # pushes the base builder image to dockerhub
   builder:
@@ -56,7 +56,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.monorepo
           push: true
-          tags: ethereumoptimism/builder:dev-latest
+          tags: onthertech/optimism.builder:dev-latest
 
   message-relayer:
     name: Publish Message Relayer Version ${{ needs.builder.outputs.message-relayer }}
@@ -81,7 +81,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.message-relayer
           push: true
-          tags: ethereumoptimism/message-relayer:dev-latest
+          tags: onthertech/optimism.message-relayer:dev-latest
 
   batch-submitter:
     name: Publish Batch Submitter
@@ -106,7 +106,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.batch-submitter
           push: true
-          tags: ethereumoptimism/batch-submitter:dev-latest
+          tags: onthertech/optimism.batch-submitter:dev-latest
 
   data-transport-layer:
     name: Publish Data Transport Layer
@@ -131,7 +131,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.data-transport-layer
           push: true
-          tags: ethereumoptimism/data-transport-layer:dev-latest
+          tags: onthertech/optimism.data-transport-layer:dev-latest
 
   contracts:
     name: Publish Deployer
@@ -156,7 +156,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.deployer
           push: true
-          tags: ethereumoptimism/deployer:dev-latest
+          tags: onthertech/optimism.deployer:dev-latest
 
   integration_tests:
     name: Publish Integration tests
@@ -181,4 +181,4 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.integration-tests
           push: true
-          tags: ethereumoptimism/integration-tests:dev-latest
+          tags: onthertech/optimism.integration-tests:dev-latest

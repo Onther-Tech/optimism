@@ -58,7 +58,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.monorepo
           push: true
-          tags: ethereumoptimism/builder
+          tags: onthertech/optimism.builder
 
   message-relayer:
     name: Publish Message Relayer
