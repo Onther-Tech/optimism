@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'test-ci'
 
 jobs:
   # The below code is duplicated, would be ideal if we could use a matrix with a
