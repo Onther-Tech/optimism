@@ -11,6 +11,7 @@ import {
   fundUser,
   getOvmEth,
   getGateway,
+  getFeeToken,
 } from './utils'
 import {
   initWatcher,
@@ -27,6 +28,7 @@ export class OptimismEnv {
   gateway: Contract
   l1Messenger: Contract
   ctc: Contract
+  feeToken: Contract
 
   // L2 Contracts
   ovmEth: Contract
@@ -49,17 +51,20 @@ export class OptimismEnv {
     this.l1Wallet = args.l1Wallet
     this.l2Wallet = args.l2Wallet
     this.ctc = args.ctc
+    this.feeToken = args.feeToken
   }
 
   static async new(): Promise<OptimismEnv> {
     const addressManager = getAddressManager(l1Wallet)
     const watcher = await initWatcher(l1Provider, l2Provider, addressManager)
     const gateway = await getGateway(l1Wallet, addressManager)
+    const feeToken = await getFeeToken(l1Wallet, addressManager)
+    await feeToken.mint(l1Wallet.address, utils.parseEther('100000000000'))
 
     // fund the user if needed
     const balance = await l2Wallet.getBalance()
     if (balance.isZero()) {
-      await fundUser(watcher, gateway, utils.parseEther('10'))
+      await fundUser(watcher, feeToken, gateway, utils.parseEther('10'))
     }
 
     const ovmEth = getOvmEth(l2Wallet)
@@ -81,6 +86,7 @@ export class OptimismEnv {
       addressManager,
       gateway,
       ctc,
+      feeToken,
       l1Messenger,
       ovmEth,
       l2Messenger,

@@ -49,11 +49,12 @@ const deployFn: DeployFunction = async (hre) => {
   // but it feels safer to initialize this anyway. Otherwise someone else could come along and
   // initialize this.
   /*await OVM_L1ERC20Gateway.initialize(
-    Lib_AddressManager.address,
-    predeploys.OVM_ETH
-  )
+    feeTokenAddress,
+    predeploys.OVM_ETH,
+    l1CrossDomainMessenger.address
+  )*/
 
-  const libAddressManager = await OVM_L1ERC20Gateway.libAddressManager()
+  /*const libAddressManager = await OVM_L1ERC20Gateway.libAddressManager()
   if (libAddressManager !== Lib_AddressManager.address) {
     throw new Error(
       `\n**FATAL ERROR. THIS SHOULD NEVER HAPPEN. CHECK YOUR DEPLOYMENT.**:\n` +

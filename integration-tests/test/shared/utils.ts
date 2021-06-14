@@ -108,14 +108,16 @@ export const getFeeToken = async (wallet: Wallet, AddressManager: Contract) => {
 
 export const fundUser = async (
   watcher: Watcher,
+  feeToken: Contract,
   gateway: Contract,
   amount: BigNumberish,
   recipient?: string
 ) => {
   const value = BigNumber.from(amount)
+  await feeToken.approve(gateway.address, value)
   const tx = recipient
-    ? gateway.depositTo(recipient, { value })
-    : gateway.deposit({ value })
+    ? gateway.depositTo(recipient, value)
+    : gateway.deposit(value)
   await waitForXDomainTransaction(watcher, tx, Direction.L1ToL2)
 }
 
