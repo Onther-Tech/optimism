@@ -1,4 +1,4 @@
-FROM ethereumoptimism/builder AS builder
+FROM onthertech/optimism.builder AS builder
 
 FROM node:14-alpine
 

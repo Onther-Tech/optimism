@@ -6,18 +6,15 @@ on:
     paths:
       - 'l2geth/**'
     branches:
-      - 'master'
+      - 'main'
       - 'develop'
-      - '*rc'
-      - 'regenesis/*'
   pull_request:
     paths:
       - 'l2geth/**'
     branches:
-      - 'master'
+      - 'main'
       - 'develop'
-      - '*rc'
-      - 'regenesis/*'
+      - 'test-ci'
   workflow_dispatch:
 
 defaults:

@@ -3,73 +3,15 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - 'main'
 
 jobs:
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    # map the step outputs to job outputs
-    outputs:
-      builder: ${{ steps.packages.outputs.builder }}
-      l2geth: ${{ steps.packages.outputs.l2geth }}
-      batch-submitter: ${{ steps.packages.outputs.batch-submitter }}
-      message-relayer: ${{ steps.packages.outputs.message-relayer }}
-      data-transport-layer: ${{ steps.packages.outputs.data-transport-layer }}
-      contracts: ${{ steps.packages.outputs.contracts }}
-
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-        with:
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
-          fetch-depth: 0
-
-      - name: Setup Node.js 12.x
-        uses: actions/setup-node@master
-        with:
-          node-version: 12.x
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v2
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install Dependencies
-        run: yarn
-
-      - name: Publish To NPM or Create Release Pull Request
-        uses: changesets/action@master
-        id: changesets
-        with:
-          publish: yarn release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # Conditional on the release being executed, we unbundle the publishedPackages to specific
-      # job outputs
-      - name: Get version tags from each published version
-        id: packages
-        if: steps.changesets.outputs.published == 'true'
-        run: |
-          node ops/scripts/ci-versions.js ${{ toJSON(steps.changesets.outputs.publishedPackages) }}
-
   # The below code is duplicated, would be ideal if we could use a matrix with a
   # key/value being dynamically generated from the `publishedPackages` output
   # while also allowing for parallelization (i.e. `l2geth` not depending on `builder`)
   # and all jobs executing in parallel once `builder` is built
   l2geth:
-    name: Publish L2Geth Version ${{ needs.release.outputs.l2geth }}
-    needs: release
-    if: needs.release.outputs.l2geth != ''
+    name: Publish L2Geth
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -90,21 +32,12 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.geth
           push: true
-          tags: ethereumoptimism/l2geth:${{ needs.release.outputs.l2geth }}
+          tags: onthertech/optimism.l2geth:latest
 
   # pushes the base builder image to dockerhub
   builder:
     name: Prepare the base builder image for the services
-    needs: release
-    if: needs.release.outputs.builder == 'true'
     runs-on: ubuntu-latest
-    # we re-output the variables so that the child jobs can access them
-    outputs:
-      batch-submitter: ${{ needs.release.outputs.batch-submitter }}
-      message-relayer: ${{ needs.release.outputs.message-relayer }}
-      data-transport-layer: ${{ needs.release.outputs.data-transport-layer }}
-      contracts: ${{ needs.release.outputs.contracts }}
-      integration-tests: ${{ needs.release.outputs.integration-tests }}
 
     steps:
       - name: Checkout
@@ -124,12 +57,11 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.monorepo
           push: true
-          tags: ethereumoptimism/builder
+          tags: onthertech/optimism.builder
 
   message-relayer:
-    name: Publish Message Relayer Version ${{ needs.builder.outputs.message-relayer }}
+    name: Publish Message Relayer
     needs: builder
-    if: needs.builder.outputs.message-relayer != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -150,12 +82,11 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.message-relayer
           push: true
-          tags: ethereumoptimism/message-relayer:${{ needs.builder.outputs.message-relayer }}
+          tags: onthertech/optimism.message-relayer:latest
 
   batch-submitter:
-    name: Publish Batch Submitter Version ${{ needs.builder.outputs.batch-submitter }}
+    name: Publish Batch Submitter
     needs: builder
-    if: needs.builder.outputs.batch-submitter != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -176,12 +107,11 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.batch-submitter
           push: true
-          tags: ethereumoptimism/batch-submitter:${{ needs.builder.outputs.batch-submitter }}
+          tags: onthertech/optimism.batch-submitter:latest
 
   data-transport-layer:
-    name: Publish Data Transport Layer Version ${{ needs.builder.outputs.data-transport-layer }}
+    name: Publish Data Transport Layer
     needs: builder
-    if: needs.builder.outputs.data-transport-layer != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -202,12 +132,11 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.data-transport-layer
           push: true
-          tags: ethereumoptimism/data-transport-layer:${{ needs.builder.outputs.data-transport-layer }}
+          tags: onthertech/optimism.data-transport-layer:latest
 
   contracts:
-    name: Publish Deployer Version ${{ needs.builder.outputs.contracts }}
+    name: Publish Deployer
     needs: builder
-    if: needs.builder.outputs.contracts != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -228,12 +157,11 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.deployer
           push: true
-          tags: ethereumoptimism/deployer:${{ needs.builder.outputs.contracts }}
+          tags: onthertech/optimism.deployer:latest
 
   integration_tests:
-    name: Publish Integration tests ${{ needs.builder.outputs.integration-tests }}
+    name: Publish Integration tests
     needs: builder
-    if: needs.builder.outputs.integration-tests != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -254,4 +182,4 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.integration-tests
           push: true
-          tags: ethereumoptimism/integration-tests:${{ needs.builder.outputs.integration-tests }}
+          tags: onthertech/optimism.integration-tests:latest
