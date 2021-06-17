@@ -66,7 +66,7 @@ export const makeContractDeployConfig = async (
 
   return {
     FeeToken: {
-      factory: getContractFactory('FeeToken'),
+      factory: getContractFactory('mockFeeToken'),
       params: [],
     },
     OVM_L2CrossDomainMessenger: {

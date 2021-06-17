@@ -21,7 +21,7 @@ const deployFn: DeployFunction = async (hre) => {
     'OVM_L1CrossDomainMessenger'
   )
 
-  const result = await deploy('FeeToken', {
+  const result = await deploy('mockFeeToken', {
     from: deployer,
     args: [],
     log: true,

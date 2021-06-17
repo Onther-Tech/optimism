@@ -21,10 +21,6 @@ const deployFn: DeployFunction = async (hre) => {
     signerOrProvider: deployer,
   })
 
-  /*const FeeToken = await getDeployedContract(hre, 'FeeToken', {
-    signerOrProvider: deployer,
-  })*/
-
   const feeTokenAddress = await Lib_AddressManager.getAddress(
     'FeeToken'
   )

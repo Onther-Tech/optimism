@@ -99,7 +99,7 @@ export const getFeeToken = async (wallet: Wallet, AddressManager: Contract) => {
 
   const feeToken = new Contract(
     feeTokenAddress,
-    getContractInterface('FeeToken'),
+    getContractInterface('mockFeeToken'),
     wallet
   )
 
