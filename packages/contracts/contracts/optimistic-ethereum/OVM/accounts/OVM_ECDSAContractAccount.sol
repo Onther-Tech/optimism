@@ -93,6 +93,10 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
         // );
 
         // Transfer fee to relayer.
+        // TODO: add more tokens
+        /*if (feeToken == address(0x0)) {
+            feeToken = 0x4200000000000000000000000000000000000006;
+        }*/
         require(
             ovmETH.transfer(
                 msg.sender,
