@@ -2,7 +2,12 @@ name: Publish Packages (canary)
 
 on:
   # enable users to manually trigger with workflow_dispatch
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      customImageName:
+        description: "Custom Docker Image Tag (keep empty for git hash)"
+        required: false
+        default: "0.0.0-rc-0"
 
 jobs:
   # The below code is duplicated, would be ideal if we could use a matrix with a
@@ -15,6 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./l2geth/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -31,16 +40,19 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.geth
           push: true
-          tags: onthertech/optimism.l2geth:dev-latest
+          tags: |
+            onthertech/optimism.l2geth:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.l2geth:${GITHUB_SHA::8}
+            onthertech/optimism.l2geth:dev-latest
 
   # pushes the base builder image to dockerhub
   builder:
     name: Prepare the base builder image for the services
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -59,15 +71,20 @@ jobs:
           tags: onthertech/optimism.builder:dev-latest
 
   message-relayer:
-    name: Publish Message Relayer Version ${{ needs.builder.outputs.message-relayer }}
+    name: Publish Message Relayer Version ${{ needs.builder.outputs.canary-docker-tag }}
     needs: builder
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/message-relayer/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -81,7 +98,10 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.message-relayer
           push: true
-          tags: onthertech/optimism.message-relayer:dev-latest
+          tags: |
+            onthertech/optimism.message-relayer:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.message-relayer:${GITHUB_SHA::8}
+            onthertech/optimism.message-relayer:dev-latest
 
   batch-submitter:
     name: Publish Batch Submitter
@@ -91,8 +111,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/batch-submitter/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -106,7 +131,10 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.batch-submitter
           push: true
-          tags: onthertech/optimism.batch-submitter:dev-latest
+          tags: |
+            onthertech/optimism.batch-submitter:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.batch-submitter:${GITHUB_SHA::8}
+            onthertech/optimism.batch-submitter:dev-latest
 
   data-transport-layer:
     name: Publish Data Transport Layer
@@ -116,8 +144,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/data-transport-layer/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -131,7 +164,10 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.data-transport-layer
           push: true
-          tags: onthertech/optimism.data-transport-layer:dev-latest
+          tags: |
+            onthertech/optimism.data-transport-layer:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.data-transport-layer:${GITHUB_SHA::8}
+            onthertech/optimism.data-transport-layer:dev-latest
 
   contracts:
     name: Publish Deployer
@@ -141,8 +177,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/contracts/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -156,7 +197,10 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.deployer
           push: true
-          tags: onthertech/optimism.deployer:dev-latest
+          tags: |
+            onthertech/optimism.deployer:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.deployer:${GITHUB_SHA::8}
+            onthertech/optimism.deployer:dev-latest
 
   integration_tests:
     name: Publish Integration tests
@@ -166,8 +210,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./integration-tests/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -181,4 +230,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.integration-tests
           push: true
-          tags: onthertech/optimism.integration-tests:dev-latest
+          tags: |
+            onthertech/optimism.integration-tests:dev-${{ steps.extractver.outputs.version }}
+            onthertech/optimism.integration-tests:${GITHUB_SHA::8}
+            onthertech/optimism.integration-tests:dev-latest

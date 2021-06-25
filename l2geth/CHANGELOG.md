@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.4.1
+
+### Patch Changes
+
+- 40b99a6e: Add new RPC endpoint `rollup_gasPrices`
+
+## 0.4.0
+
+### Minor Changes
+
+- e04de624: Add support for ovmCALL with nonzero ETH value
+
+### Patch Changes
+
+- 01646a0a: Add new config `ROLLUP_GAS_PRICE_ORACLE_OWNER_ADDRESS` to set the owner of the gas price oracle at runtime
+- 8fee7bed: Add extra overflow protection for the DTL types
+- 5fc728da: Add a new Standard Token Bridge, to handle deposits and withdrawals of any ERC20 token.
+  For projects developing a custom bridge, if you were previously importing `iAbs_BaseCrossDomainMessenger`, you should now
+  import `iOVM_CrossDomainMessenger`.
+- 257deb70: Prevent overflows in abi encoding of ovm codec transaction from geth types.Transaction
+- 08873674: Update queueOrigin type
+- 01646a0a: Removes config options that are no longer required. `ROLLUP_DATAPRICE`, `ROLLUP_EXECUTION_PRICE`, `ROLLUP_GAS_PRICE_ORACLE_ADDRESS` and `ROLLUP_ENABLE_L2_GAS_POLLING`. The oracle was moved to a predeploy 0x42.. address and polling is always enabled as it no longer needs to be backwards compatible
+- 0a7f5a46: Removes the gas refund for unused gas in geth since it is instead managed in the smart contracts
+- e045f582: Adds new SequencerFeeVault contract to store generated fees
+- 25a5dbdd: Removes the SignatureHashType from l2geth as it is deprecated and no longer required.
+
+## 0.3.9
+
+### Patch Changes
+
+- f409ce75: Fixes an off-by-one error that would sometimes break replica syncing when stopping and restarting geth.
+- d9fd67d2: Correctly log 'end of OVM execution' message.
+
+## 0.3.8
+
+### Patch Changes
+
+- 989a3027: Optimize main polling loops
+- cc6c7f07: Bump golang version to 1.15
+
+## 0.3.7
+
+### Patch Changes
+
+- cb4a928b: Make block hashes deterministic by using the same clique signer key
+- f1b27318: Fixes incorrect type parsing in the RollupClient. The gasLimit became greater than the largest safe JS number so it needs to be represented as a string
+- a64f8161: Implement the next fee spec in both geth and in core-utils
+- 5e4eaea1: fix potential underflow when launching the chain when the last verified index is 0
+- 1293825c: Fix gasLimit overflow
+- a25acbbd: Refactor the SyncService to more closely implement the specification. This includes using query params to select the backend from the DTL, trailing syncing of batches for the sequencer, syncing by batches as the verifier as well as unified code paths for transaction ingestion to prevent double ingestion or missed ingestion
+- c2b6e14b: Implement the latest fee spec such that the L2 gas limit is scaled and the tx.gasPrice/tx.gasLimit show correctly in metamask
+
 ## 0.3.6
 
 ### Patch Changes
