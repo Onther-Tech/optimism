@@ -10,20 +10,38 @@ on:
         default: "0.0.0-rc-0"
 
 jobs:
+  canary-publish:
+    name: Publish Packages (canary)
+    runs-on: ubuntu-latest
+    # map the step outputs to job outputs
+    outputs:
+      canary-docker-tag: ${{ steps.docker-image-name.outputs.canary-docker-tag }}
+
+    steps:
+      - name: Docker Image Name
+        id: docker-image-name
+        run: |
+          if [ ${CUSTOM_IMAGE_NAME} == '' ]
+          then
+              echo "::set-output name=canary-docker-tag::${GITHUB_SHA::8}"
+          else
+              echo "::set-output name=canary-docker-tag::dev-${CUSTOM_IMAGE_NAME}"
+          fi
+        env:
+          CUSTOM_IMAGE_NAME: ${{ github.event.inputs.customImageName }}
+
   # The below code is duplicated, would be ideal if we could use a matrix with a
   # key/value being dynamically generated from the `publishedPackages` output
   # while also allowing for parallelization (i.e. `l2geth` not depending on `builder`)
   # and all jobs executing in parallel once `builder` is built
   l2geth:
-    name: Publish L2Geth
+    name: Publish L2Geth Version ${{ needs.canary-publish.outputs.canary-docker-tag }}
+    needs: canary-publish
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./l2geth/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -41,18 +59,21 @@ jobs:
           file: ./ops/docker/Dockerfile.geth
           push: true
           tags: |
-            onthertech/optimism.l2geth:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.l2geth:${GITHUB_SHA::8}
+            onthertech/optimism.l2geth:${{ needs.canary-publish.outputs.canary-docker-tag }}
             onthertech/optimism.l2geth:dev-latest
 
   # pushes the base builder image to dockerhub
   builder:
     name: Prepare the base builder image for the services
+    needs: canary-publish
     runs-on: ubuntu-latest
+    # we re-output the variables so that the child jobs can access them
+    outputs:
+      canary-docker-tag: ${{ needs.canary-publish.outputs.canary-docker-tag }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -68,7 +89,7 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.monorepo
           push: true
-          tags: onthertech/optimism.builder:dev-latest
+          tags: onthertech/optimism.builder
 
   message-relayer:
     name: Publish Message Relayer Version ${{ needs.builder.outputs.canary-docker-tag }}
@@ -78,13 +99,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./packages/message-relayer/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -99,25 +115,19 @@ jobs:
           file: ./ops/docker/Dockerfile.message-relayer
           push: true
           tags: |
-            onthertech/optimism.message-relayer:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.message-relayer:${GITHUB_SHA::8}
+            onthertech/optimism.message-relayer:${{ needs.builder.outputs.canary-docker-tag }}
             onthertech/optimism.message-relayer:dev-latest
 
   batch-submitter:
-    name: Publish Batch Submitter
+    name: Publish Batch Submitter Version ${{ needs.builder.outputs.canary-docker-tag }}
     needs: builder
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./packages/batch-submitter/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -132,25 +142,19 @@ jobs:
           file: ./ops/docker/Dockerfile.batch-submitter
           push: true
           tags: |
-            onthertech/optimism.batch-submitter:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.batch-submitter:${GITHUB_SHA::8}
+            onthertech/optimism.batch-submitter:${{ needs.builder.outputs.canary-docker-tag }}
             onthertech/optimism.batch-submitter:dev-latest
 
   data-transport-layer:
-    name: Publish Data Transport Layer
+    name: Publish Data Transport Layer Version ${{ needs.builder.outputs.canary-docker-tag }}
     needs: builder
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./packages/data-transport-layer/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -165,25 +169,19 @@ jobs:
           file: ./ops/docker/Dockerfile.data-transport-layer
           push: true
           tags: |
-            onthertech/optimism.data-transport-layer:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.data-transport-layer:${GITHUB_SHA::8}
+            onthertech/optimism.data-transport-layer:${{ needs.builder.outputs.canary-docker-tag }}
             onthertech/optimism.data-transport-layer:dev-latest
 
   contracts:
-    name: Publish Deployer
+    name: Publish Deployer Version ${{ needs.builder.outputs.canary-docker-tag }}
     needs: builder
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./packages/contracts/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -198,25 +196,19 @@ jobs:
           file: ./ops/docker/Dockerfile.deployer
           push: true
           tags: |
-            onthertech/optimism.deployer:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.deployer:${GITHUB_SHA::8}
+            onthertech/optimism.deployer:${{ needs.builder.outputs.canary-docker-tag }}
             onthertech/optimism.deployer:dev-latest
 
   integration_tests:
-    name: Publish Integration tests
+    name: Publish Integration tests ${{ needs.builder.outputs.integration-tests }}
     needs: builder
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
-      - name: Get version from package.json
-        id: extractver
-        run: echo "::set-output name=version::$(node -p "require('./integration-tests/package.json').version")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -231,6 +223,5 @@ jobs:
           file: ./ops/docker/Dockerfile.integration-tests
           push: true
           tags: |
-            onthertech/optimism.integration-tests:dev-${{ steps.extractver.outputs.version }}
-            onthertech/optimism.integration-tests:${GITHUB_SHA::8}
+            onthertech/optimism.integration-tests:${{ needs.builder.outputs.canary-docker-tag }}
             onthertech/optimism.integration-tests:dev-latest
