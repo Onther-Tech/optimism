@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'test-ci'
 
 jobs:
   # The below code is duplicated, would be ideal if we could use a matrix with a
@@ -16,23 +17,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./l2geth/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
       - name: Publish L2Geth
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.geth
           push: true
-          tags: onthertech/optimism.l2geth:latest
+          tags: |
+            onthertech/optimism.l2geth:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.l2geth:latest
 
   # pushes the base builder image to dockerhub
   builder:
@@ -44,13 +47,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -69,20 +70,23 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/message-relayer/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.message-relayer
           push: true
-          tags: onthertech/optimism.message-relayer:latest
+          tags: |
+            onthertech/optimism.message-relayer:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.message-relayer:latest
 
   batch-submitter:
     name: Publish Batch Submitter
@@ -94,20 +98,23 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/batch-submitter/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.batch-submitter
           push: true
-          tags: onthertech/optimism.batch-submitter:latest
+          tags: |
+            onthertech/optimism.batch-submitter:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.batch-submitter:latest
 
   data-transport-layer:
     name: Publish Data Transport Layer
@@ -119,20 +126,23 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/data-transport-layer/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.data-transport-layer
           push: true
-          tags: onthertech/optimism.data-transport-layer:latest
+          tags: |
+            onthertech/optimism.data-transport-layer:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.data-transport-layer:latest
 
   contracts:
     name: Publish Deployer
@@ -144,20 +154,23 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/contracts/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.deployer
           push: true
-          tags: onthertech/optimism.deployer:latest
+          tags: |
+            onthertech/optimism.deployer:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.deployer:latest
 
   integration_tests:
     name: Publish Integration tests
@@ -169,17 +182,20 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./integration-tests/package.json').version")"
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
-
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ops/docker/Dockerfile.integration-tests
           push: true
-          tags: onthertech/optimism.integration-tests:latest
+          tags: |
+            onthertech/optimism.integration-tests:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.integration-tests:latest
