@@ -1,10 +1,10 @@
 name: Static analysis
 
 on:
-  push:
-    branches:
-      - master
-      - develop
+  # push:
+  #   branches:
+  #     - master
+  #     - develop
   pull_request:
   workflow_dispatch:
 
@@ -24,7 +24,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
+          node-version: "12.x"
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -49,7 +49,7 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Install Slither
         run: pip3 install slither-analyzer

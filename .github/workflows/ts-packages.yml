@@ -1,10 +1,10 @@
 name: typescript / contracts
 
 on:
-  push:
-    branches:
-      - 'main'
-      - 'develop'
+  # push:
+  #   branches:
+  #     - 'main'
+  #     - 'develop'
   pull_request:
   workflow_dispatch:
 
@@ -22,7 +22,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
+          node-version: "12.x"
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -71,7 +71,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
+          node-version: "12.x"
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
