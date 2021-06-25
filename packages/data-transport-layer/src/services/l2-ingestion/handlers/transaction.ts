@@ -13,6 +13,7 @@ import {
   padHexString,
   SEQUENCER_ENTRYPOINT_ADDRESS,
   SEQUENCER_GAS_LIMIT,
+  parseSignatureVParam,
 } from '../../../utils'
 
 export const handleSequencerBlock = {
@@ -43,21 +44,21 @@ export const handleSequencerBlock = {
     if (transaction.queueOrigin === 'sequencer') {
       const decodedTransaction: DecodedSequencerBatchTransaction = {
         sig: {
-          v: BigNumber.from(transaction.v).toNumber() - 2 * chainId - 35,
+          v: parseSignatureVParam(transaction.v, chainId),
           r: padHexString(transaction.r, 32),
           s: padHexString(transaction.s, 32),
         },
         value: transaction.value,
-        gasLimit: BigNumber.from(transaction.gas).toNumber(),
-        gasPrice: BigNumber.from(transaction.gasPrice).toNumber(), // ?
-        nonce: BigNumber.from(transaction.nonce).toNumber(),
+        gasLimit: BigNumber.from(transaction.gas).toString(),
+        gasPrice: BigNumber.from(transaction.gasPrice).toString(),
+        nonce: BigNumber.from(transaction.nonce).toString(),
         target: transaction.to,
         data: transaction.input,
       }
 
       transactionEntry = {
         ...transactionEntry,
-        gasLimit: SEQUENCER_GAS_LIMIT, // ?
+        gasLimit: `${SEQUENCER_GAS_LIMIT}`, // ?
         target: SEQUENCER_ENTRYPOINT_ADDRESS,
         origin: null,
         data: serialize(
@@ -82,7 +83,7 @@ export const handleSequencerBlock = {
     } else {
       transactionEntry = {
         ...transactionEntry,
-        gasLimit: BigNumber.from(transaction.gas).toNumber(),
+        gasLimit: BigNumber.from(transaction.gas).toString(),
         target: ethers.utils.getAddress(transaction.to),
         origin: ethers.utils.getAddress(transaction.l1TxOrigin),
         data: transaction.input,

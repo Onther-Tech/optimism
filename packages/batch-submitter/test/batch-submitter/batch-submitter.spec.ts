@@ -9,7 +9,7 @@ import sinon from 'sinon'
 import { Web3Provider } from '@ethersproject/providers'
 
 import scc from '@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/chain/OVM_StateCommitmentChain.sol/OVM_StateCommitmentChain.json'
-import { getContractInterface } from '@eth-optimism/contracts'
+import { getContractInterface, predeploys } from '@eth-optimism/contracts'
 import { smockit, MockContract } from '@eth-optimism/smock'
 
 /* Internal Imports */
@@ -33,12 +33,10 @@ import {
   QueueOrigin,
   Batch,
   Signature,
-  TxType,
   remove0x,
 } from '@eth-optimism/core-utils'
 import { Logger, Metrics } from '@eth-optimism/common-ts'
 
-const DECOMPRESSION_ADDRESS = '0x4200000000000000000000000000000000000008'
 const DUMMY_ADDRESS = '0x' + '00'.repeat(20)
 const EXAMPLE_STATE_ROOT =
   '0x16b7f83f409c7195b1f4fde5652f1b54a4477eacb6db7927691becafba5f8801'
@@ -98,7 +96,7 @@ describe('BatchSubmitter', () => {
     )
     await AddressManager.setAddress(
       'OVM_DecompressionPrecompileAddress',
-      DECOMPRESSION_ADDRESS
+      predeploys.OVM_SequencerEntrypoint
     )
 
     Mock__OVM_ExecutionManager = await smockit(
@@ -253,7 +251,7 @@ describe('BatchSubmitter', () => {
           {
             rawTransaction: '0x1234',
             l1BlockNumber: nextQueueElement.blockNumber - 1,
-            txType: TxType.EIP155,
+            txType: 0,
             queueOrigin: QueueOrigin.Sequencer,
             l1TxOrigin: null,
           } as any,
@@ -302,7 +300,7 @@ describe('BatchSubmitter', () => {
           {
             rawTransaction: '0x1234',
             l1BlockNumber: nextQueueElement.blockNumber - 1,
-            txType: TxType.EthSign,
+            txType: 1,
             queueOrigin: QueueOrigin.Sequencer,
             l1TxOrigin: null,
           } as any,
@@ -406,7 +404,7 @@ describe('BatchSubmitter', () => {
         {
           rawTransaction: '0x1234',
           l1BlockNumber: nextQueueElement.blockNumber - 1,
-          txType: TxType.EIP155,
+          txType: 0,
           queueOrigin: QueueOrigin.Sequencer,
           l1TxOrigin: null,
         } as any,
@@ -484,7 +482,7 @@ describe('Batch Submitter with Ganache', () => {
       gasPrices.push(gasPrice)
 
       const tx = signer.sendTransaction({
-        to: DECOMPRESSION_ADDRESS,
+        to: predeploys.OVM_SequencerEntrypoint,
         value: 88,
         nonce: 0,
         gasPrice,
