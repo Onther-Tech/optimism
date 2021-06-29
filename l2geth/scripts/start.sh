@@ -10,6 +10,7 @@ TARGET_GAS_LIMIT=11000000
 CHAIN_ID=10
 ETH1_CTC_DEPLOYMENT_HEIGHT=12410807
 ETH1_L1_STANDARD_BRIDGE_ADDRESS=0xe681F80966a8b1fFadECf8068bD6F99034791c95
+ETH1_L1_FEE_TOKEN_ADDRESS=0x0000000000000000000000000000000000000000
 ETH1_L1_CROSS_DOMAIN_MESSENGER_ADDRESS=0x902e5fF5A99C4eC1C21bbab089fdabE32EF0A5DF
 ADDRESS_MANAGER_OWNER_ADDRESS=0x9BA6e03D8B90dE867373Db8cF1A58d2F7F006b3A
 ROLLUP_STATE_DUMP_PATH=https://storage.googleapis.com/optimism/mainnet/4.json
@@ -137,6 +138,15 @@ while (( "$#" )); do
                 exit 1
             fi
             ;;
+        --eth1.l1feetokenaddress)
+            if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                ETH1_L1_FEE_TOKEN_ADDRESS="$2"
+                shift 2
+            else
+                echo "Error: Argument for $1 is missing" >&2
+                exit 1
+            fi
+            ;;
         --eth1.ctcdeploymentheight)
             if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
                 ADDRESS_MANAGER_OWNER_ADDRESS="$2"
@@ -236,6 +246,7 @@ cmd="$cmd --rollup.addressmanagerowneraddress $ADDRESS_MANAGER_OWNER_ADDRESS"
 cmd="$cmd --rollup.statedumppath $ROLLUP_STATE_DUMP_PATH"
 cmd="$cmd --eth1.ctcdeploymentheight $ETH1_CTC_DEPLOYMENT_HEIGHT"
 cmd="$cmd --eth1.l1standardbridgeaddress $ETH1_L1_STANDARD_BRIDGE_ADDRESS"
+cmd="$cmd --eth1.l1feetokenaddress $ETH1_L1_FEE_TOKEN_ADDRESS"
 cmd="$cmd --rollup.clienthttp $ROLLUP_CLIENT_HTTP"
 cmd="$cmd --rollup.pollinterval $ROLLUP_POLL_INTERVAL"
 cmd="$cmd --rollup.timestamprefresh $ROLLUP_TIMESTAMP_REFRESH"
