@@ -53,6 +53,13 @@ const deployFn: DeployFunction = async (hre) => {
             depositAmount
           )} ETH`
         )
+
+
+        const feeToken = await getDeployedContract(
+          hre,
+          'mockFeeToken',
+        )
+        await feeToken.connect(wallet).mint(wallet.address, 1_000_000)
       })
     )
   }

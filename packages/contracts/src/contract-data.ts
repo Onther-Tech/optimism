@@ -113,6 +113,7 @@ export const getL1ContractData = (network: Network) => {
 }
 
 const OVM_ETH = require('../artifacts-ovm/contracts/optimistic-ethereum/OVM/predeploys/OVM_ETH.sol/OVM_ETH.json')
+const OVM_FeeToken = require('../artifacts-ovm/contracts/optimistic-ethereum/OVM/predeploys/OVM_FeeToken.sol/OVM_FeeToken.json')
 const OVM_L2CrossDomainMessenger = require('../artifacts-ovm/contracts/optimistic-ethereum/OVM/bridge/messaging/OVM_L2CrossDomainMessenger.sol/OVM_L2CrossDomainMessenger.json')
 const OVM_L2ToL1MessagePasser = require('../artifacts-ovm/contracts/optimistic-ethereum/OVM/predeploys/OVM_L2ToL1MessagePasser.sol/OVM_L2ToL1MessagePasser.json')
 const OVM_L1MessageSender = require('../artifacts-ovm/contracts/optimistic-ethereum/OVM/predeploys/OVM_L1MessageSender.sol/OVM_L1MessageSender.json')
@@ -127,6 +128,10 @@ export const getL2ContractData = () => {
     OVM_ETH: {
       abi: OVM_ETH.abi,
       address: l2Addresses.OVM_ETH,
+    },
+    OVM_FeeToken: {
+      abi: OVM_FeeToken.abi,
+      address: l2Addresses.OVM_FeeToken,
     },
     OVM_L2CrossDomainMessenger: {
       abi: OVM_L2CrossDomainMessenger.abi,

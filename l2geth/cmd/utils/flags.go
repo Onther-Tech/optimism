@@ -835,6 +835,12 @@ var (
 		Value:  "0x0000000000000000000000000000000000000000",
 		EnvVar: "ETH1_L1_STANDARD_BRIDGE_ADDRESS",
 	}
+	Eth1FeeTokenAddressFlag = cli.StringFlag{
+		Name:   "eth1.l1feetokenaddress",
+		Usage:  "Deployment address of the Fee Token",
+		Value:  "0x0000000000000000000000000000000000000000",
+		EnvVar: "ETH1_L1_FEE_TOKEN_ADDRESS",
+	}
 	Eth1ChainIdFlag = cli.Uint64Flag{
 		Name:   "eth1.chainid",
 		Usage:  "Network identifier (integer, 1=Frontier, 2=Morden (disused), 3=Ropsten, 4=Rinkeby)",
@@ -1143,6 +1149,10 @@ func setEth1(ctx *cli.Context, cfg *rollup.Config) {
 	if ctx.GlobalIsSet(Eth1StandardBridgeAddressFlag.Name) {
 		addr := ctx.GlobalString(Eth1StandardBridgeAddressFlag.Name)
 		cfg.L1StandardBridgeAddress = common.HexToAddress(addr)
+	}
+	if ctx.GlobalIsSet(Eth1FeeTokenAddressFlag.Name) {
+		addr := ctx.GlobalString(Eth1FeeTokenAddressFlag.Name)
+		cfg.L1FeeTokenAddress = common.HexToAddress(addr)
 	}
 	if ctx.GlobalIsSet(Eth1ChainIdFlag.Name) {
 		cfg.Eth1ChainId = ctx.GlobalUint64(Eth1ChainIdFlag.Name)
@@ -1763,9 +1773,10 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 		l1FeeWalletAddress := cfg.Rollup.L1FeeWalletAddress
 		addrManagerOwnerAddress := cfg.Rollup.AddressManagerOwnerAddress
 		l1StandardBridgeAddress := cfg.Rollup.L1StandardBridgeAddress
+		l1FeeTokenAddress := cfg.Rollup.L1FeeTokenAddress
 		gpoOwnerAddress := cfg.Rollup.GasPriceOracleOwnerAddress
 		stateDumpPath := cfg.Rollup.StateDumpPath
-		cfg.Genesis = core.DeveloperGenesisBlock(uint64(ctx.GlobalInt(DeveloperPeriodFlag.Name)), developer.Address, xdomainAddress, l1StandardBridgeAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress, stateDumpPath, chainID, gasLimit)
+		cfg.Genesis = core.DeveloperGenesisBlock(uint64(ctx.GlobalInt(DeveloperPeriodFlag.Name)), developer.Address, xdomainAddress, l1StandardBridgeAddress, l1FeeTokenAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress, stateDumpPath, chainID, gasLimit)
 		if !ctx.GlobalIsSet(MinerGasPriceFlag.Name) && !ctx.GlobalIsSet(MinerLegacyGasPriceFlag.Name) {
 			cfg.Miner.GasPrice = big.NewInt(1)
 		}

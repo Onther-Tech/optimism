@@ -87,6 +87,25 @@ const deployFn: DeployFunction = async (hre) => {
     )
   }
 
+  const feeTokenAddress = await Lib_AddressManager.getAddress(
+    'FeeToken'
+  )
+
+  // Set Slot 2 to the L2 Standard Bridge Address
+  await Proxy__WithChugSplashInterface.setStorage(
+    hre.ethers.utils.hexZeroPad('0x02', 32),
+    hre.ethers.utils.hexZeroPad(feeTokenAddress, 32)
+  )
+
+  // Verify that the slot was set correctly
+  const feeTokenStored = await Proxy__WithBridgeInterface.callStatic.feeToken()
+  console.log('feeTokenStored:', feeTokenStored)
+  if (feeTokenStored !== feeTokenAddress) {
+    throw new Error(
+      'FeeToken address was not correctly set, check the key value used in setStorage'
+    )
+  }
+
   // transfer ownership to Address Manager owner
   const addressManagerOwner = Lib_AddressManager.callStatic.owner()
   await Proxy__WithChugSplashInterface.setOwner(addressManagerOwner)
