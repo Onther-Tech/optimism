@@ -186,7 +186,7 @@ services:
   integration_tests:
     image: ethereumoptimism/integration-tests
     deploy:
-       replicas: 0
+       replicas: 1
     build:
       context: ..
       dockerfile: ./ops/docker/Dockerfile.integration-tests
