@@ -7,14 +7,14 @@ import { OptimismEnv } from './shared/env'
 import { solidity } from 'ethereum-waffle'
 import { Direction } from './shared/watcher-utils'
 
-import ERC20_L1_JSON from '../artifacts/contracts/ERC20.sol/ERC20.json'
-import ERC20_L2_JSON from '../artifacts-ovm/contracts/ERC20.sol/ERC20.json'
+import CONSUMER_L1_JSON from '../artifacts/contracts/GasConsumer.sol/GasConsumer.json'
+import CONSUMER_L2_JSON from '../artifacts-ovm/contracts/GasConsumer.sol/GasConsumer.json'
 
 chai.use(solidity)
 
 const DEFAULT_TEST_GAS_L1 = 330_000
 
-describe('Basic ERC20 interactions', async () => {
+describe('Basic GasConsumer interactions', async () => {
   const initialAmount = 1000000
   const tokenName = 'OVM Test'
   const tokenDecimals = 8
@@ -23,10 +23,10 @@ describe('Basic ERC20 interactions', async () => {
   let wallet_l2: Wallet
   let wallet_l1: Wallet
   let other: Wallet
-  let Factory__ERC20_L1: ContractFactory
-  let Factory__ERC20_L2: ContractFactory
-  let ERC20_L2: Contract
-  let ERC20_L1: Contract
+  let Factory__GasConsumer_L1: ContractFactory
+  let Factory__GasConsumer_L2: ContractFactory
+  let GasConsumer_L2: Contract
+  let GasConsumer_L1: Contract
 
   let startTime: number
   let startBlockl1: number
@@ -38,31 +38,21 @@ describe('Basic ERC20 interactions', async () => {
     wallet_l2 = env.l2Wallet
     wallet_l1 = env.l1Wallet
     other = Wallet.createRandom().connect(ethers.provider)
-    Factory__ERC20_L1 = new ContractFactory(
-      ERC20_L1_JSON.abi,
-      ERC20_L1_JSON.bytecode,
+    Factory__GasConsumer_L1 = new ContractFactory(
+      CONSUMER_L1_JSON.abi,
+      CONSUMER_L1_JSON.bytecode,
       wallet_l1
     )
-    Factory__ERC20_L2 = new ContractFactory(
-      ERC20_L2_JSON.abi,
-      ERC20_L2_JSON.bytecode,
+    Factory__GasConsumer_L2 = new ContractFactory(
+      CONSUMER_L2_JSON.abi,
+      CONSUMER_L2_JSON.bytecode,
       wallet_l2
     )
     
-    ERC20_L2 = await Factory__ERC20_L2.deploy(
-      initialAmount,
-      tokenName,
-      tokenDecimals,
-      TokenSymbol
-    )
-    await ERC20_L2.deployTransaction.wait()
-    ERC20_L1 = await Factory__ERC20_L1.deploy(
-      initialAmount,
-      tokenName,
-      tokenDecimals,
-      TokenSymbol
-    )
-    await ERC20_L1.deployTransaction.wait()
+    GasConsumer_L2 = await Factory__GasConsumer_L2.deploy()
+    await GasConsumer_L2.deployTransaction.wait()
+    GasConsumer_L1 = await Factory__GasConsumer_L1.deploy()
+    await GasConsumer_L1.deployTransaction.wait()
 
     for (let i = 0; i < 300; i++) {
       let newWallet = Wallet.createRandom().connect(l1Provider)
@@ -74,8 +64,6 @@ describe('Basic ERC20 interactions', async () => {
       })).wait()
 
       await env.ovmEth.transfer(newWallet.address, ethers.utils.parseEther("1.0"))
-      await ERC20_L1.transfer(newWallet.address, 1000)
-      await ERC20_L2.transfer(newWallet.address, 1000)
     }
 
     await l1Provider.send("evm_setAutomine", [false])
@@ -102,19 +90,22 @@ describe('Basic ERC20 interactions', async () => {
     }
   })
 
-  const transfer = async (ERC20: Contract, other: Wallet) => {
-    const amount = 1
+  const sendTx = async (GasConsumer: Contract, other: Wallet) => {
+    const gasLimit = 1_000_000
+
     const txs = users.map(async (user: Wallet) => {
-      (await ERC20.connect(user).transfer(other.address, amount)).wait()
+      (await GasConsumer.connect(user).consume({
+        gasLimit: gasLimit
+      })).wait()
     })
     await Promise.all(txs)
   }
 
   it('Sequentially L1', async () => {
-    await transfer(ERC20_L1, other)
+    await sendTx(GasConsumer_L1, other)
   })
 
   /*it('Sequentially L2', async () => {
-    await transfer(ERC20_L2, other)
+    await sendTx(GasConsumer_L2, other)
   })*/
 })
