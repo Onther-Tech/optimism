@@ -13,6 +13,7 @@ import ERC20_L2_JSON from '../artifacts-ovm/contracts/ERC20.sol/ERC20.json'
 chai.use(solidity)
 
 const DEFAULT_TEST_GAS_L1 = 330_000
+const DEFAULT_TEST_GAS_L2 = 1_300_000
 
 describe('Basic ERC20 interactions', async () => {
   const initialAmount = 1000000
@@ -33,16 +34,24 @@ describe('Basic ERC20 interactions', async () => {
   let startBlockl2: number
   let users: Wallet[] = []
 
-  before(async () => {
-    const env = await OptimismEnv.new()
-    wallet_l2 = env.l2Wallet
-    wallet_l1 = env.l1Wallet
-    other = Wallet.createRandom().connect(ethers.provider)
+  const isL1 = false
+
+  const prepareL1Env = async (env) => {
     Factory__ERC20_L1 = new ContractFactory(
       ERC20_L1_JSON.abi,
       ERC20_L1_JSON.bytecode,
       wallet_l1
     )
+    ERC20_L1 = await Factory__ERC20_L1.deploy(
+      initialAmount,
+      tokenName,
+      tokenDecimals,
+      TokenSymbol
+    )
+    await ERC20_L1.deployTransaction.wait()
+  }
+
+  const prepareL2Env = async (env) => {
     Factory__ERC20_L2 = new ContractFactory(
       ERC20_L2_JSON.abi,
       ERC20_L2_JSON.bytecode,
@@ -56,27 +65,47 @@ describe('Basic ERC20 interactions', async () => {
       TokenSymbol
     )
     await ERC20_L2.deployTransaction.wait()
-    ERC20_L1 = await Factory__ERC20_L1.deploy(
-      initialAmount,
-      tokenName,
-      tokenDecimals,
-      TokenSymbol
-    )
-    await ERC20_L1.deployTransaction.wait()
+  }
 
-    for (let i = 0; i < 300; i++) {
-      let newWallet = Wallet.createRandom().connect(l1Provider)
+  const prepareEnv = async (env) => {
+    if (isL1) {
+      await prepareL1Env(env)
+    } else {
+      await prepareL2Env(env)
+    }
+
+    for (let i = 0; i < 100; i++) {
+      const provider = isL1 ? l1Provider : l2Provider
+      let newWallet = Wallet.createRandom().connect(provider)
       users.push(newWallet)
 
-      await (await wallet_l1.sendTransaction({
-        to: newWallet.address,
-        value: ethers.utils.parseEther("1.0")
-      })).wait()
+      if (isL1) {
+        await (await wallet_l1.sendTransaction({
+          to: newWallet.address,
+          value: ethers.utils.parseEther("1.0")
+        })).wait()
+        await (await ERC20_L1.transfer(newWallet.address, 1000)).wait()
+      } else {
+        await env.waitForXDomainTransaction(
+          env.l1Bridge.depositETHTo(newWallet.address, DEFAULT_TEST_GAS_L2, '0xFFFF', {
+            value: ethers.utils.parseEther("10"),
+            gasLimit: DEFAULT_TEST_GAS_L1
+          }),
+          Direction.L1ToL2
+        )
 
-      await env.ovmEth.transfer(newWallet.address, ethers.utils.parseEther("1.0"))
-      await ERC20_L1.transfer(newWallet.address, 1000)
-      await ERC20_L2.transfer(newWallet.address, 1000)
+        await ERC20_L2.transfer(newWallet.address, 1000)
+      }
     }
+  }
+
+  before(async () => {
+    const env = await OptimismEnv.new()
+    wallet_l2 = env.l2Wallet
+    wallet_l1 = env.l1Wallet
+    other = Wallet.createRandom().connect(ethers.provider)
+
+    await prepareEnv(env)
 
     await l1Provider.send("evm_setAutomine", [false])
     await l1Provider.send("evm_setIntervalMining", [1000])
@@ -84,37 +113,46 @@ describe('Basic ERC20 interactions', async () => {
 
   beforeEach(async () => {
     startTime = Date.now()
-    startBlockl1 = await l1Provider.getBlockNumber()
-    startBlockl2 = await l2Provider.getBlockNumber()
+    const provider = isL1 ? l1Provider : l2Provider
+    const startBlock = await provider.getBlockNumber()
+    console.log(`startBlock: ${startBlock}`)
   })
 
   afterEach(async () => {
     const duration = Date.now() - startTime
     console.log(`duration: ${duration}`)
 
-    const endBlockl1 = await l1Provider.getBlockNumber()
-    const endBlockl2 = await l2Provider.getBlockNumber()
-
-    let txCount = 0
-    for (let i = startBlockl1 + 1; i < endBlockl1; i++) {
-      const block = await l1Provider.getBlock(i)
-      txCount += block.transactions.length
-    }
+    const provider = isL1 ? l1Provider : l2Provider
+    const endBlock = await provider.getBlockNumber()
+    console.log(`endBlock: ${endBlock}`)
   })
 
   const transfer = async (ERC20: Contract, other: Wallet) => {
     const amount = 1
-    const txs = users.map(async (user: Wallet) => {
-      (await ERC20.connect(user).transfer(other.address, amount)).wait()
-    })
+
+    let txs
+    if (isL1) {
+      txs = users.map(async (user: Wallet) => {
+        (await ERC20.connect(user).transfer(other.address, amount)).wait()
+      })
+    } else {
+      txs = users.map(async (user: Wallet) => {
+        (await ERC20.connect(user).transfer(other.address, amount, {
+          gasLimit: 6380000
+        })).wait()
+      })
+    }
+
     await Promise.all(txs)
   }
 
-  it('Sequentially L1', async () => {
-    await transfer(ERC20_L1, other)
-  })
-
-  /*it('Sequentially L2', async () => {
-    await transfer(ERC20_L2, other)
-  })*/
+  if (isL1) {
+    it('Sequentially L1', async () => {
+      await transfer(ERC20_L1, other)
+    })
+  } else {
+    it('Sequentially L2', async () => {
+      await transfer(ERC20_L2, other)
+    })
+  }
 })
