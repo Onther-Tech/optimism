@@ -48,7 +48,6 @@
     "release": "yarn build && yarn changeset publish"
   },
   "dependencies": {
-    "@changesets/cli": "^2.16.0",
-    "@eth-optimism/contracts": "file:packages/contracts"
+    "@changesets/cli": "^2.16.0"
   }
 }
