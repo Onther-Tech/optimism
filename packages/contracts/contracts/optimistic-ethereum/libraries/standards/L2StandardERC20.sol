@@ -3,13 +3,14 @@ pragma solidity >=0.5.16 <0.8.0;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import './IL2StandardERC20.sol';
+import "./IL2StandardERC20.sol";
 
 contract L2StandardERC20 is IL2StandardERC20, ERC20 {
     address public override l1Token;
     address public l2Bridge;
 
     /**
+     * @param _l2Bridge Address of the L2 standard bridge.
      * @param _l1Token Address of the corresponding L1 token.
      * @param _name ERC20 name.
      * @param _symbol ERC20 symbol.

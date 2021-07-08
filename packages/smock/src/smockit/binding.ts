@@ -7,24 +7,29 @@ import BN from 'bn.js'
 // Handle hardhat ^2.4.0
 let decodeRevertReason: (value: Buffer) => string
 try {
-  decodeRevertReason = require('hardhat/internal/hardhat-network/stack-traces/revert-reasons')
-    .decodeRevertReason
+  decodeRevertReason =
+    require('hardhat/internal/hardhat-network/stack-traces/revert-reasons').decodeRevertReason
 } catch (err) {
   const {
     ReturnData,
   } = require('hardhat/internal/hardhat-network/provider/return-data')
   decodeRevertReason = (value: Buffer) => {
-    return new ReturnData(value).decodeError()
+    const returnData = new ReturnData(value)
+    if (returnData.isErrorReturnData()) {
+      return returnData.decodeError()
+    } else {
+      return ''
+    }
   }
 }
 // Handle hardhat ^2.2.0
 let TransactionExecutionError: any
 try {
-  TransactionExecutionError = require('hardhat/internal/hardhat-network/provider/errors')
-    .TransactionExecutionError
+  TransactionExecutionError =
+    require('hardhat/internal/hardhat-network/provider/errors').TransactionExecutionError
 } catch (err) {
-  TransactionExecutionError = require('hardhat/internal/core/providers/errors')
-    .TransactionExecutionError
+  TransactionExecutionError =
+    require('hardhat/internal/core/providers/errors').TransactionExecutionError
 }
 /* eslint-enable @typescript-eslint/no-var-requires */
 
@@ -137,13 +142,8 @@ const initializeSmock = (provider: HardhatNetworkProvider): void => {
 
     // Compute the mock return data.
     const mock: MockContract = vm._smockState.mocks[target]
-    const {
-      resolve,
-      functionName,
-      rawReturnValue,
-      returnValue,
-      gasUsed,
-    } = await mock._smockit(message.data)
+    const { resolve, functionName, rawReturnValue, returnValue, gasUsed } =
+      await mock._smockit(message.data)
 
     // Set the mock return data, potentially set the `exceptionError` field if the user requested
     // a revert.

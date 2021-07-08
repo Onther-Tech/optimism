@@ -24,6 +24,10 @@ const (
 // found. It applies to transactions, queue elements and batches
 var errElementNotFound = errors.New("element not found")
 
+// errHttpError represents the error case of when the remote server
+// returns a 400 or greater error
+var errHTTPError = errors.New("http error")
+
 // Batch represents the data structure that is submitted with
 // a series of transactions to layer one
 type Batch struct {
@@ -68,7 +72,7 @@ type transaction struct {
 	BatchIndex  uint64          `json:"batchIndex"`
 	BlockNumber uint64          `json:"blockNumber"`
 	Timestamp   uint64          `json:"timestamp"`
-	Value       hexutil.Uint64  `json:"value"`
+	Value       *hexutil.Big    `json:"value"`
 	GasLimit    uint64          `json:"gasLimit,string"`
 	Target      common.Address  `json:"target"`
 	Origin      *common.Address `json:"origin"`
@@ -102,7 +106,7 @@ type signature struct {
 // it means that the decoding failed.
 type decoded struct {
 	Signature signature       `json:"sig"`
-	Value     hexutil.Uint64  `json:"value"`
+	Value     *hexutil.Big    `json:"value"`
 	GasLimit  uint64          `json:"gasLimit,string"`
 	GasPrice  uint64          `json:"gasPrice,string"`
 	Nonce     uint64          `json:"nonce,string"`
@@ -154,6 +158,15 @@ func NewClient(url string, chainID *big.Int) *Client {
 	client := resty.New()
 	client.SetHostURL(url)
 	client.SetHeader("User-Agent", "sequencer")
+	client.OnAfterResponse(func(c *resty.Client, r *resty.Response) error {
+		statusCode := r.StatusCode()
+		if statusCode >= 400 {
+			method := r.Request.Method
+			url := r.Request.URL
+			return fmt.Errorf("%d cannot %s %s: %w", statusCode, method, url, errHTTPError)
+		}
+		return nil
+	})
 	signer := types.NewEIP155Signer(chainID)
 
 	return &Client{
@@ -330,7 +343,7 @@ func batchedTransactionToTransaction(res *transaction, signer *types.EIP155Signe
 	if res.Decoded != nil {
 		nonce := res.Decoded.Nonce
 		to := res.Decoded.Target
-		value := new(big.Int).SetUint64(uint64(res.Decoded.Value))
+		value := (*big.Int)(res.Decoded.Value)
 		// Note: there are two gas limits, one top level and
 		// another on the raw transaction itself. Maybe maxGasLimit
 		// for the top level?
@@ -383,7 +396,7 @@ func batchedTransactionToTransaction(res *transaction, signer *types.EIP155Signe
 	gasLimit := res.GasLimit
 	data := res.Data
 	origin := res.Origin
-	value := new(big.Int).SetUint64(uint64(res.Value))
+	value := (*big.Int)(res.Value)
 	tx := types.NewTransaction(nonce, target, value, gasLimit, big.NewInt(0), data)
 	txMeta := types.NewTransactionMeta(
 		new(big.Int).SetUint64(res.BlockNumber),
