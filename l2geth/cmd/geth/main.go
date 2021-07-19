@@ -155,6 +155,7 @@ var (
 		utils.Eth1L1CrossDomainMessengerAddressFlag,
 		utils.Eth1L1FeeWalletAddressFlag,
 		utils.Eth1StandardBridgeAddressFlag,
+		utils.Eth1FeeTokenAddressFlag,
 		utils.Eth1ChainIdFlag,
 		utils.RollupClientHttpFlag,
 		utils.RollupEnableVerifierFlag,

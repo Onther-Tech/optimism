@@ -268,7 +268,7 @@ func (s *StateDB) GetBalance(addr common.Address) *big.Int {
 }
 
 func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
-	eth := common.HexToAddress("0x4200000000000000000000000000000000000006")
+	eth := common.HexToAddress("0x4200000000000000000000000000000000000100")
 	position := big.NewInt(0)
 	hasher := sha3.NewLegacyKeccak256()
 	hasher.Write(common.LeftPadBytes(addr.Bytes(), 32))

@@ -237,7 +237,7 @@ export const makeContractDeployConfig = async (
     OVM_FeeToken: {
       factory: getContractFactory('OVM_FeeToken'),
       params: [
-        await AddressManager.getAddress('FeeToken'),
+        constants.AddressZero,
         'FeeToken',
         'Fee'
       ],

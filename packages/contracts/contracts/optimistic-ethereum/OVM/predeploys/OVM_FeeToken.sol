@@ -35,13 +35,4 @@ contract OVM_FeeToken is L2StandardERC20 {
         )
     {}
 
-    // TODO: for testing
-    function setL1Token(
-        address _token
-    )
-        external
-    {
-        require(l1Token == address(0), "l1Token is already initialized");
-        l1Token = _token;
-    }
 }

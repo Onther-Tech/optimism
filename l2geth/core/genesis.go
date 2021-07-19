@@ -313,9 +313,10 @@ func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDo
 	OVM_FeeToken, ok := stateDump.Accounts["OVM_FeeToken"]
 	if ok {
 		log.Info("Setting FeeToken in OVM_FeeToken", "address", l1FeeTokenAddress.Hex())
-		// Set the gateway of OVM_L2StandardBridge at new dump
-		l1FeeTokenSlot := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000")
-		l1FeeTokenValue := common.BytesToHash(l1FeeTokenAddress.Bytes())
+		log.Info("Setting FeeToken in OVM_FeeToken 2", "address", OVM_FeeToken.Address.Hex())
+		// Set the gateway of OVM_FeeToken at new dump
+		l1FeeTokenSlot := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000005")
+		l1FeeTokenValue := common.BytesToHash(append(l1FeeTokenAddress.Bytes(), 0x12))
 		statedb.SetState(OVM_FeeToken.Address, l1FeeTokenSlot, l1FeeTokenValue)
 	}
 	ExecutionManager, ok := stateDump.Accounts["OVM_ExecutionManager"]
