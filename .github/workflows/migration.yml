@@ -1,0 +1,254 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "migration-*"
+
+jobs:
+  # The below code is duplicated, would be ideal if we could use a matrix with a
+  # key/value being dynamically generated from the `publishedPackages` output
+  # while also allowing for parallelization (i.e. `l2geth` not depending on `builder`)
+  # and all jobs executing in parallel once `builder` is built
+  l2geth:
+    name: Publish L2Geth
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./l2geth/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Publish L2Geth
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.geth
+          push: true
+          tags: onthertech/optimism.l2geth:migration
+
+      - name: Publish op_exporter
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.op_exporter
+          push: true
+          tags: ethereumoptimism/op_exporter:${{ needs.release.outputs.l2geth }}
+
+      - name: Publish rpc-proxy
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.rpc-proxy
+          push: true
+          tags: onthertech/optimism.rpc-proxy:migration
+
+  gas-oracle:
+    name: Publish Gas Oracle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Publish Gas Oracle
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.gas-oracle
+          push: true
+          tags: onthertech/optimism.gas-oracle:migration
+  # pushes the base builder image to dockerhub
+  builder:
+    name: Prepare the base builder image for the services
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.monorepo
+          push: true
+          tags: onthertech/optimism.builder
+
+  message-relayer:
+    name: Publish Message Relayer
+    needs: builder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/message-relayer/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.message-relayer
+          push: true
+          tags: onthertech/optimism.message-relayer:migration
+
+  batch-submitter:
+    name: Publish Batch Submitter
+    needs: builder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/batch-submitter/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.batch-submitter
+          push: true
+          tags: onthertech/optimism.batch-submitter:migration
+
+  data-transport-layer:
+    name: Publish Data Transport Layer
+    needs: builder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/data-transport-layer/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.data-transport-layer
+          push: true
+          tags: onthertech/optimism.data-transport-layer:migration
+
+  contracts:
+    name: Publish Deployer
+    needs: builder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./packages/contracts/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.deployer
+          push: true
+          tags: onthertech/optimism.deployer:migration
+
+  integration_tests:
+    name: Publish Integration tests
+    needs: builder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get version from package.json
+        id: extractver
+        run: echo "::set-output name=version::$(node -p "require('./integration-tests/package.json').version")"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ops/docker/Dockerfile.integration-tests
+          push: true
+          tags: onthertech/optimism.integration-tests:migration
