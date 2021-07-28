@@ -47,7 +47,9 @@ jobs:
           context: .
           file: ./ops/docker/Dockerfile.op_exporter
           push: true
-          tags: ethereumoptimism/op_exporter:${{ needs.release.outputs.l2geth }}
+          tags: |
+            onthertech/optimism.op_exporter:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.op_exporter:latest
 
       - name: Publish rpc-proxy
         uses: docker/build-push-action@v2
