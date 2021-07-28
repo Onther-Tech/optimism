@@ -1,5 +1,17 @@
 # @eth-optimism/integration-tests
 
+## 0.2.2
+
+### Patch Changes
+
+- c73c3939: Update the typescript version to `4.3.5`
+
+## 0.2.1
+
+### Patch Changes
+
+- f1dc8b77: Add various stress tests
+
 ## 0.2.0
 
 ### Minor Changes

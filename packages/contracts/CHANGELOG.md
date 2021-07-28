@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.4.6
+
+### Patch Changes
+
+- 8feac092: Make it possible to override mint & burn methods in L2StandardERC20
+- 4736eb2e: Add a task for setting the gas price oracle
+
+## 0.4.5
+
+### Patch Changes
+
+- c73c3939: Update the typescript version to `4.3.5`
+- Updated dependencies [c73c3939]
+  - @eth-optimism/core-utils@0.5.1
+
+## 0.4.4
+
+### Patch Changes
+
+- 063151a6: Run lint over the tasks directory
+
+## 0.4.3
+
+### Patch Changes
+
+- 694cf429: Add a hardhat task for setting the L2 gas price
+
 ## 0.4.2
 
 ### Patch Changes
