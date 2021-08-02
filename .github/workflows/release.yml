@@ -38,7 +38,6 @@ jobs:
           push: true
           tags: |
             onthertech/optimism.l2geth:${{ steps.extractver.outputs.version }}
-            onthertech/optimism.l2geth:${GITHUB_SHA::8}
             onthertech/optimism.l2geth:latest
 
       - name: Publish op_exporter
