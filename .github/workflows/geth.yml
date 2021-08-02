@@ -6,18 +6,15 @@ on:
     paths:
       - 'l2geth/**'
     branches:
-      - 'master'
+      - 'main'
       - 'develop'
-      - '*rc'
-      - 'regenesis/*'
   pull_request:
     paths:
       - 'l2geth/**'
     branches:
-      - 'master'
+      - 'main'
       - 'develop'
-      - '*rc'
-      - 'regenesis/*'
+      - 'test-ci'
   workflow_dispatch:
 
 defaults:
@@ -32,7 +29,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.14.x
+        go-version: 1.15.x
 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -47,7 +44,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.14.x
+        go-version: 1.15.x
 
     - name: Checkout code
       uses: actions/checkout@v2

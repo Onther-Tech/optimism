@@ -1,5 +1,77 @@
 # @eth-optimism/message-relayer
 
+## 0.1.7
+
+### Patch Changes
+
+- fd86043a: Adds a new l2 to l1 message relaying utility within the message relayer package
+- Updated dependencies [0313794b]
+- Updated dependencies [049200f4]
+- Updated dependencies [21e47e1f]
+  - @eth-optimism/contracts@0.4.2
+  - @eth-optimism/core-utils@0.5.0
+
+## 0.1.6
+
+### Patch Changes
+
+- 735cd78f: Update relayer package JSON to correctly export all files in dist
+- Updated dependencies [25f09abd]
+- Updated dependencies [dd8edc7b]
+- Updated dependencies [c87e4c74]
+- Updated dependencies [db0dbfb2]
+- Updated dependencies [7f5936a8]
+- Updated dependencies [f87a2d00]
+- Updated dependencies [85da4979]
+- Updated dependencies [57ca21a2]
+- Updated dependencies [5fc728da]
+- Updated dependencies [2e72fd90]
+- Updated dependencies [c43b33ec]
+- Updated dependencies [26bc63ad]
+- Updated dependencies [a0d9e565]
+- Updated dependencies [2bd49730]
+- Updated dependencies [38355a3b]
+- Updated dependencies [3c2c32e1]
+- Updated dependencies [d9644c34]
+- Updated dependencies [48ece14c]
+- Updated dependencies [e04de624]
+- Updated dependencies [014dea71]
+- Updated dependencies [fa29b03e]
+- Updated dependencies [6b46c8ba]
+- Updated dependencies [e045f582]
+- Updated dependencies [5c89c45f]
+- Updated dependencies [df5ff890]
+- Updated dependencies [e29fab10]
+- Updated dependencies [c2a04893]
+- Updated dependencies [baacda34]
+  - @eth-optimism/contracts@0.4.0
+  - @eth-optimism/core-utils@0.4.6
+  - @eth-optimism/common-ts@0.1.4
+
+## 0.1.5
+
+### Patch Changes
+
+- baa3b761: Improve Sentry support, initializing as needed and ensuring ERROR logs route to Sentry
+- Updated dependencies [baa3b761]
+  - @eth-optimism/common-ts@0.1.3
+
+## 0.1.4
+
+### Patch Changes
+
+- 9d39121b: Adds a README and cleans up the interface for generating messages and proofs
+- 86708bb5: Adds a new set of tools for generating messages to be relayed and their proofs
+- 064c03af: Removes spreadsheet mode from the message relayer
+- Updated dependencies [a64f8161]
+- Updated dependencies [4e03f8a9]
+- Updated dependencies [8e2bfd07]
+- Updated dependencies [750a5021]
+- Updated dependencies [c2b6e14b]
+- Updated dependencies [245136f1]
+  - @eth-optimism/core-utils@0.4.5
+  - @eth-optimism/contracts@0.3.5
+
 ## 0.1.3
 
 ### Patch Changes

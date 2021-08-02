@@ -3,10 +3,8 @@ name: integration
 on:
   push:
     branches:
-      - 'master'
-      - 'develop'
-      - '*rc'
-      - 'regenesis/*'
+      - "main"
+      - "develop"
   pull_request:
   workflow_dispatch:
 
@@ -14,8 +12,8 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     env:
-        DOCKER_BUILDKIT: 1
-        COMPOSE_DOCKER_CLI_BUILD: 1
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       # Monorepo tests
       - uses: actions/checkout@v2
@@ -38,25 +36,31 @@ jobs:
 
       - name: Bring the stack up
         working-directory: ./ops
-        run: docker-compose up -d
+        run: |
+          ./scripts/stats.sh &
+          docker-compose up -d
+
+      - name: Wait for the Sequencer node
+        working-directory: ./ops
+        run: ./scripts/wait-for-sequencer.sh
 
       - name: Run the integration tests
         working-directory: ./ops
         run: docker-compose run integration_tests
 
       # Examples Tests
-      - name: Test & deploy hardhat-example on Ethereum (regression)
-        working-directory: ./examples/hardhat
-        run: |
-          yarn
-          yarn deploy
-          yarn test:integration
+      # - name: Test & deploy hardhat-example on Ethereum (regression)
+      #  working-directory: ./examples/hardhat
+      #  run: |
+      #    yarn
+      #    yarn deploy
+      #    yarn test:integration
 
-      - name: Test & deploy hardhat-example on Optimistic Ethereum
-        working-directory: ./examples/hardhat
-        run: |
-          yarn deploy:ovm
-          yarn test:integration:ovm
+      # - name: Test & deploy hardhat-example on Optimistic Ethereum
+      #  working-directory: ./examples/hardhat
+      #  run: |
+      #    yarn deploy:ovm
+      #    yarn test:integration:ovm
 
       - name: Test & deploy waffle-example on Ethereum (regression)
         working-directory: ./examples/waffle
@@ -85,11 +89,29 @@ jobs:
           yarn compile:ovm
           yarn test:integration:ovm
           yarn deploy:ovm
-      
-      - name: Test l1-l2-deposit-withdrawal example on Optimistic Ethereum with cross-domain message passing
-        working-directory: ./examples/l1-l2-deposit-withdrawal
-        run: |
-          yarn
-          yarn compile
-          yarn compile:ovm
-          yarn test:integration:ovm
+
+      # - name: Test l1-l2-deposit-withdrawal example on Optimistic Ethereum with cross-domain message passing
+      #   working-directory: ./examples/l1-l2-deposit-withdrawal
+      #   run: |
+      #     yarn
+      #     yarn compile
+      #     yarn compile:ovm
+      #     yarn test:integration:ovm
+
+      - name: Collect docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+        with:
+          images: 'onthertech/optimism.builder,onthertech/optimism.deployer,onthertech/optimism.data-transport-layer,onthertech/optimism.l2geth,onthertech/optimism.message-relayer,onthertech/optimism.batch-submitter,onthertech/optimism.l2geth,onthertech/optimism.integration-tests'
+          dest: '~/logs'
+
+      - name: Tar logs
+        if: failure()
+        run: tar cvzf ./logs.tgz ~/logs
+
+      - name: Upload logs to GitHub
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: logs.tgz
+          path: ./logs.tgz
