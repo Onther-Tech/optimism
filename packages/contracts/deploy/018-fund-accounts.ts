@@ -6,6 +6,7 @@ import {
   defaultHardhatNetworkParams,
 } from 'hardhat/internal/core/config/default-config'
 import { normalizeHardhatNetworkAccountsConfig } from 'hardhat/internal/core/providers/util'
+import { predeploys } from '../src/predeploys'
 
 /* Imports: Internal */
 import { getDeployedContract } from '../src/hardhat-deploy-ethers'
@@ -54,12 +55,21 @@ const deployFn: DeployFunction = async (hre) => {
           )} ETH`
         )
 
-
         const feeToken = await getDeployedContract(
           hre,
           'mockFeeToken',
         )
-        await feeToken.connect(wallet).mint(wallet.address, 1_000_000)
+        await feeToken.connect(wallet).mint(wallet.address, balance)
+        await feeToken.connect(wallet).approve(OVM_L1StandardBridge.address, depositAmount)
+        await OVM_L1StandardBridge.connect(wallet).depositERC20(
+          feeToken.address,
+          predeploys.OVM_FeeToken,
+          depositAmount,
+          8_000_000,
+          '0x', {
+            gasLimit: 2_000_000, // Idk, gas estimation was broken and this fixes it.
+          }
+        )
       })
     )
   }
