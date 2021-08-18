@@ -17,10 +17,12 @@ const deployFn: DeployFunction = async (hre) => {
   )
 
   let feeTokenAddress = (hre as any).deployConfig.feeTokenAddress
+  let usingFeeToken = (hre as any).deployConfig.usingFeeToken
+  if (usingFeeToken === false) {
+    return
+  }
 
-  console.log(`network: ${hre.network.name}`)
-
-  if (hre.network.name.includes('custom')) {
+  if (feeTokenAddress === "0x0000000000000000000000000000000000000000") {
     const result = await deploy('mockFeeToken', {
       from: deployer,
       args: [],
