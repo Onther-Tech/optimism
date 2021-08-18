@@ -68,6 +68,8 @@ const main = async () => {
     ovmRelayerAddress: sequencer.address,
     ovmAddressManagerOwner: deployer.address,
     noCompile: process.env.NO_COMPILE ? true : false,
+    usingFeeToken: process.env.USING_FEETOKEN ? true : false,
+    feeTokenAddress: process.env.FEETOKEN,
   })
 
   // Stuff below this line is currently required for CI to work properly. We probably want to

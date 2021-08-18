@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import * as Ganache from 'ganache-core'
 import { keccak256 } from 'ethers/lib/utils'
 import { fromHexString, toHexString, remove0x } from '@eth-optimism/core-utils'
+import * as dotenv from 'dotenv'
 
 /* Internal Imports */
 import { StorageDump, StateDump } from './get-dump'
@@ -82,6 +83,7 @@ const sanitizeStorageDump = (
 }
 
 export const makeStateDump = async (cfg: RollupDeployConfig): Promise<any> => {
+  dotenv.config()
   const ganache = (Ganache as any).provider({
     gasLimit: 100_000_000,
     allowUnlimitedContractSize: true,
@@ -188,6 +190,12 @@ export const makeStateDump = async (cfg: RollupDeployConfig): Promise<any> => {
 
   for (let i = 0; i < Object.keys(deploymentResult.contracts).length; i++) {
     const name = Object.keys(deploymentResult.contracts)[i]
+
+    if (process.env.USING_FEETOKEN !== "true"
+      && name === "OVM_FeeToken") {
+      continue
+    }
+
     const contract = deploymentResult.contracts[name]
     let code: string
     if (ovmCompiled.includes(name)) {
