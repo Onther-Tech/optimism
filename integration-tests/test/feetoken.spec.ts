@@ -69,6 +69,17 @@ describe('FeeToken Integration Tests', async () => {
     )
   })
 
+  it('fee token informations', async () => {
+    const addressManager = env.addressManager
+    const ctcAdress = await addressManager.getAddress('OVM_CanonicalTransactionChain')
+    const ctc = getContractFactory('iOVM_Tokamak')
+      .connect(env.l1Wallet)
+      .attach(ctcAdress)
+    expect(await ctc.version()).to.equal("Natasha optimism")
+    expect(await ctc.usingFeeToken()).to.equal(true)
+    expect(await ctc.feeToken()).to.equal(l1FeeToken.address)
+  })
+
   it('depositERC20', async () => {
     const depositAmount = utils.parseEther('100')
     const preBalances = await getBalances(env)
