@@ -14,6 +14,7 @@ import { iOVM_ChainStorageContainer } from "../../iOVM/chain/iOVM_ChainStorageCo
 
 /* Contract Imports */
 import { OVM_ExecutionManager } from "../execution/OVM_ExecutionManager.sol";
+import { OVM_Tokamak } from "../tokamak/OVM_Tokamak.sol";
 
 /* External Imports */
 import { Math } from "@openzeppelin/contracts/math/Math.sol";
@@ -31,7 +32,7 @@ import { Math } from "@openzeppelin/contracts/math/Math.sol";
  * Compiler used: solc
  * Runtime target: EVM
  */
-contract OVM_CanonicalTransactionChain is iOVM_CanonicalTransactionChain, Lib_AddressResolver {
+contract OVM_CanonicalTransactionChain is iOVM_CanonicalTransactionChain, Lib_AddressResolver, OVM_Tokamak {
 
     /*************
      * Constants *
@@ -67,9 +68,12 @@ contract OVM_CanonicalTransactionChain is iOVM_CanonicalTransactionChain, Lib_Ad
         address _libAddressManager,
         uint256 _forceInclusionPeriodSeconds,
         uint256 _forceInclusionPeriodBlocks,
-        uint256 _maxTransactionGasLimit
+        uint256 _maxTransactionGasLimit,
+        bool _usingFeeToken,
+        address _feeToken
     )
         Lib_AddressResolver(_libAddressManager)
+        OVM_Tokamak(_usingFeeToken, _feeToken)
     {
         forceInclusionPeriodSeconds = _forceInclusionPeriodSeconds;
         forceInclusionPeriodBlocks = _forceInclusionPeriodBlocks;
