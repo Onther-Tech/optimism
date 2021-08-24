@@ -293,12 +293,12 @@ func (s *StateDB) GetFeeBalance(addr common.Address) *big.Int {
 
 func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
 	fee := common.HexToAddress("0x4200000000000000000000000000000000000100")
-    size := s.GetCodeSize(fee)
-    if size == 0 {
-        return s.GetETHBalance(addr)
-    }
+	size := s.GetCodeSize(fee)
+	if size == 0 {
+		return s.GetETHBalance(addr)
+	}
 
-    return s.GetFeeBalance(addr)
+	return s.GetFeeBalance(addr)
 }
 
 func (s *StateDB) GetNonce(addr common.Address) uint64 {
