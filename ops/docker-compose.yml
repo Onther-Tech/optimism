@@ -29,6 +29,8 @@ services:
       dockerfile: ./ops/docker/Dockerfile.deployer
     entrypoint: ./deployer.sh
     environment:
+        USING_FEETOKEN: 1
+        FEETOKEN: "0x0000000000000000000000000000000000000000"
         FRAUD_PROOF_WINDOW_SECONDS: 0
         L1_NODE_WEB3_URL: http://l1_chain:8545
         # these keys are hardhat's first 2 accounts, DO NOT use in production

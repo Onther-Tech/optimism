@@ -74,6 +74,7 @@ type Genesis struct {
 	AddressManagerOwnerAddress    common.Address `json:"-"`
 	GasPriceOracleOwnerAddress    common.Address `json:"-"`
 	L1StandardBridgeAddress       common.Address `json:"-"`
+	L1FeeTokenAddress             common.Address `json:"-"`
 	ChainID                       *big.Int       `json:"-"`
 }
 
@@ -268,7 +269,7 @@ func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
 }
 
 // ApplyOvmStateToState applies the initial OVM state to a state object.
-func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDomainMessengerAddress, l1StandardBridgeAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, chainID *big.Int, gasLimit uint64) {
+func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDomainMessengerAddress, l1StandardBridgeAddress, l1FeeTokenAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, chainID *big.Int, gasLimit uint64) {
 	if len(stateDump.Accounts) == 0 {
 		return
 	}
@@ -308,6 +309,15 @@ func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDo
 		l1BridgeSlot := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000001")
 		l1BridgeValue := common.BytesToHash(l1StandardBridgeAddress.Bytes())
 		statedb.SetState(OVM_L2StandardBridge.Address, l1BridgeSlot, l1BridgeValue)
+	}
+	OVM_FeeToken, ok := stateDump.Accounts["OVM_FeeToken"]
+	if ok {
+		log.Info("Setting FeeToken in OVM_FeeToken", "address", l1FeeTokenAddress.Hex())
+		log.Info("Setting FeeToken in OVM_FeeToken 2", "address", OVM_FeeToken.Address.Hex())
+		// Set the gateway of OVM_FeeToken at new dump
+		l1FeeTokenSlot := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000005")
+		l1FeeTokenValue := common.BytesToHash(append(l1FeeTokenAddress.Bytes(), 0x12))
+		statedb.SetState(OVM_FeeToken.Address, l1FeeTokenSlot, l1FeeTokenValue)
 	}
 	ExecutionManager, ok := stateDump.Accounts["OVM_ExecutionManager"]
 	if ok {
@@ -349,7 +359,7 @@ func (g *Genesis) ToBlock(db ethdb.Database) *types.Block {
 
 	if vm.UsingOVM {
 		// OVM_ENABLED
-		ApplyOvmStateToState(statedb, g.Config.StateDump, g.L1CrossDomainMessengerAddress, g.L1StandardBridgeAddress, g.AddressManagerOwnerAddress, g.GasPriceOracleOwnerAddress, g.L1FeeWalletAddress, g.ChainID, g.GasLimit)
+		ApplyOvmStateToState(statedb, g.Config.StateDump, g.L1CrossDomainMessengerAddress, g.L1StandardBridgeAddress, g.L1FeeTokenAddress, g.AddressManagerOwnerAddress, g.GasPriceOracleOwnerAddress, g.L1FeeWalletAddress, g.ChainID, g.GasLimit)
 	}
 
 	for addr, account := range g.Alloc {
@@ -476,7 +486,7 @@ func DefaultGoerliGenesisBlock() *Genesis {
 }
 
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block.
-func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress common.Address, l1StandardBridgeAddress common.Address, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, stateDumpPath string, chainID *big.Int, gasLimit uint64) *Genesis {
+func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress common.Address, l1StandardBridgeAddress common.Address, l1FeeTokenAddress common.Address, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, stateDumpPath string, chainID *big.Int, gasLimit uint64) *Genesis {
 	// Override the default period to the user requested one
 	config := *params.AllCliqueProtocolChanges
 	config.Clique.Period = period
@@ -536,6 +546,7 @@ func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress comm
 		AddressManagerOwnerAddress:    addrManagerOwnerAddress,
 		GasPriceOracleOwnerAddress:    gpoOwnerAddress,
 		L1StandardBridgeAddress:       l1StandardBridgeAddress,
+		L1FeeTokenAddress:             l1FeeTokenAddress,
 		ChainID:                       config.ChainID,
 	}
 }

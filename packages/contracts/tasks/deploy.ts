@@ -99,6 +99,18 @@ task('deploy')
     undefined,
     types.string
   )
+  .addOptionalParam(
+    'usingFeeToken',
+    'Whether to use ERC20 as fee on L2.',
+    undefined,
+    types.boolean
+  )
+  .addOptionalParam(
+    'feeTokenAddress',
+    'Address on L1 that will be used as fee token on L2.',
+    undefined,
+    types.string
+  )
   .setAction(async (args, hre: any, runSuper) => {
     // Necessary because hardhat doesn't let us attach non-optional parameters to existing tasks.
     const validateAddressArg = (argName: string) => {
@@ -118,6 +130,7 @@ task('deploy')
     validateAddressArg('ovmProposerAddress')
     validateAddressArg('ovmRelayerAddress')
     validateAddressArg('ovmAddressManagerOwner')
+    validateAddressArg('feeTokenAddress')
 
     args.ctcForceInclusionPeriodBlocks = Math.floor(
       args.ctcForceInclusionPeriodSeconds / args.l1BlockTimeSeconds

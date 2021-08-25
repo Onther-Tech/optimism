@@ -12,6 +12,7 @@ import { Lib_ExecutionManagerWrapper } from
 import { Lib_PredeployAddresses } from "../../libraries/constants/Lib_PredeployAddresses.sol";
 
 /* Contract Imports */
+import { OVM_FeeToken } from "../predeploys/OVM_FeeToken.sol";
 import { OVM_ETH } from "../predeploys/OVM_ETH.sol";
 
 /* External Imports */
@@ -122,13 +123,23 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
         // );
 
         // Transfer fee to relayer.
-        require(
-            OVM_ETH(Lib_PredeployAddresses.OVM_ETH).transfer(
-                Lib_PredeployAddresses.SEQUENCER_FEE_WALLET,
-                SafeMath.mul(_transaction.gasLimit, _transaction.gasPrice)
-            ),
-            "Fee was not transferred to relayer."
-        );
+        if (useFeeToken()) {
+            require(
+                OVM_FeeToken(Lib_PredeployAddresses.OVM_FEETOKEN).transfer(
+                    Lib_PredeployAddresses.SEQUENCER_FEE_WALLET,
+                    SafeMath.mul(_transaction.gasLimit, _transaction.gasPrice)
+                ),
+                "Fee was not transferred to relayer."
+            );
+        } else {
+            require(
+                OVM_ETH(Lib_PredeployAddresses.OVM_ETH).transfer(
+                    Lib_PredeployAddresses.SEQUENCER_FEE_WALLET,
+                    SafeMath.mul(_transaction.gasLimit, _transaction.gasPrice)
+                ),
+                "Fee was not transferred to relayer."
+            );
+        }
 
         if (_transaction.isCreate) {
             // TEMPORARY: Disable value transfer for contract creations.
@@ -163,5 +174,14 @@ contract OVM_ECDSAContractAccount is iOVM_ECDSAContractAccount {
 
             return _transaction.to.call{value: _transaction.value}(_transaction.data);
         }
+    }
+
+    function useFeeToken() internal view returns (bool) {
+        uint256 size;
+        address addr = Lib_PredeployAddresses.OVM_FEETOKEN;
+        assembly {
+            size := extcodesize(addr)
+        }
+        return size > 0;
     }
 }

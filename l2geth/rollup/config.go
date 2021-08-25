@@ -25,6 +25,7 @@ type Config struct {
 	AddressManagerOwnerAddress    common.Address
 	GasPriceOracleOwnerAddress    common.Address
 	L1StandardBridgeAddress       common.Address
+	L1FeeTokenAddress             common.Address
 	// Turns on checking of state for L2 gas price
 	EnableL2GasPolling bool
 	// Deployment Height of the canonical transaction chain
