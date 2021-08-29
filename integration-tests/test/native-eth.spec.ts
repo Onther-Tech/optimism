@@ -26,10 +26,14 @@ describe('Native ETH Integration Tests', async () => {
 
   const getBalances = async (_env: OptimismEnv) => {
     const l1UserBalance = await _env.l1Wallet.getBalance()
-    const l2UserBalance = await _env.l2Wallet.getBalance()
+    //const l2UserBalance = await _env.l2Wallet.getBalance()
+    //const l1UserBalance = await _env.ovmEth.balanceOf(_env.l1Wallet.address)
+    const l2UserBalance = await _env.ovmEth.balanceOf(_env.l2Wallet.address)
 
     const l1BobBalance = await l1Bob.getBalance()
-    const l2BobBalance = await l2Bob.getBalance()
+    //const l2BobBalance = await l2Bob.getBalance()
+    //const l1BobBalance = await _env.ovmEth.balanceOf(l1Bob.address)
+    const l2BobBalance = await _env.ovmEth.balanceOf(l2Bob.address)
 
     const sequencerBalance = await _env.ovmEth.balanceOf(
       PROXY_SEQUENCER_ENTRYPOINT_ADDRESS
@@ -262,7 +266,12 @@ describe('Native ETH Integration Tests', async () => {
       transaction,
       Direction.L2ToL1
     )
-    const fee = receipts.tx.gasLimit.mul(receipts.tx.gasPrice)
+    let fee
+    if (await env.usingFeeToken()) {
+      fee = 0
+    } else {
+      fee = receipts.tx.gasLimit.mul(receipts.tx.gasPrice)
+    }
 
     const postBalances = await getBalances(env)
 
@@ -294,6 +303,10 @@ describe('Native ETH Integration Tests', async () => {
     const other = Wallet.createRandom().connect(env.l2Wallet.provider)
     const tx = await env.ovmEth.transfer(other.address, amount)
     await tx.wait()
+    if (await env.usingFeeToken()) {
+      const tx2 = await env.ovmFeeToken.transfer(other.address, amount)
+      await tx2.wait()
+    }
 
     const l1BalanceBefore = await other
       .connect(env.l1Wallet.provider)
@@ -317,11 +330,17 @@ describe('Native ETH Integration Tests', async () => {
     )
 
     // check that correct amount was withdrawn and that fee was charged
-    const fee = receipts.tx.gasLimit.mul(receipts.tx.gasPrice)
+    let fee
+    if (await env.usingFeeToken()) {
+      fee = 0
+    } else {
+      fee = receipts.tx.gasLimit.mul(receipts.tx.gasPrice)
+    }
     const l1BalanceAfter = await other
       .connect(env.l1Wallet.provider)
       .getBalance()
-    const l2BalanceAfter = await other.getBalance()
+    //const l2BalanceAfter = await other.getBalance()
+    const l2BalanceAfter = await env.ovmEth.balanceOf(other.address)
     expect(l1BalanceAfter).to.deep.eq(l1BalanceBefore.add(withdrawnAmount))
     expect(l2BalanceAfter).to.deep.eq(amount.sub(withdrawnAmount).sub(fee))
   })
@@ -332,9 +351,10 @@ describe('Native ETH Integration Tests', async () => {
 
     beforeEach(async () => {
       await fundUser(env.watcher, env.l1Bridge, value, env.l2Wallet.address)
-      initialBalance = await env.l2Wallet.provider.getBalance(
+      /*initialBalance = await env.l2Wallet.provider.getBalance(
         env.l2Wallet.address
-      )
+      )*/
+      initialBalance = await env.ovmEth.balanceOf(env.l2Wallet.address)
     })
 
     it('successfully deposits', async () => {
@@ -342,7 +362,7 @@ describe('Native ETH Integration Tests', async () => {
       const receipt = await depositTx.wait()
 
       expect(
-        await env.l2Wallet.provider.getBalance(env.l2Wallet.address)
+        await env.ovmEth.balanceOf(env.l2Wallet.address)
       ).to.equal(initialBalance)
       expect(receipt.events.length).to.equal(4)
 
@@ -374,7 +394,7 @@ describe('Native ETH Integration Tests', async () => {
       const receipt = await fallbackTx.wait()
       expect(receipt.status).to.equal(1)
       expect(
-        await env.l2Wallet.provider.getBalance(env.l2Wallet.address)
+        await env.ovmEth.balanceOf(env.l2Wallet.address)
       ).to.equal(initialBalance)
     })
 
@@ -382,7 +402,7 @@ describe('Native ETH Integration Tests', async () => {
       const withdrawTx = await env.ovmEth.withdraw(value, { gasPrice: 0 })
       const receipt = await withdrawTx.wait()
       expect(
-        await env.l2Wallet.provider.getBalance(env.l2Wallet.address)
+        await env.ovmEth.balanceOf(env.l2Wallet.address)
       ).to.equal(initialBalance)
       expect(receipt.events.length).to.equal(2)
 

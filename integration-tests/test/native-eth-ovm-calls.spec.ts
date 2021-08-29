@@ -26,10 +26,17 @@ describe('Native ETH value integration tests', () => {
 
   it('should allow an L2 EOA to send to a new account and back again', async () => {
     const getBalances = async (): Promise<BigNumber[]> => {
-      return [
-        await wallet.provider.getBalance(wallet.address),
-        await wallet.provider.getBalance(other.address),
-      ]
+      if (await env.usingFeeToken) {
+        return [
+          await env.ovmFeeToken.balanceOf(wallet.address),
+          await env.ovmFeeToken.balanceOf(other.address)
+        ]
+      } else {
+        return [
+          await wallet.provider.getBalance(wallet.address),
+          await wallet.provider.getBalance(other.address),
+        ]
+      }
     }
 
     const checkBalances = async (
@@ -42,29 +49,49 @@ describe('Native ETH value integration tests', () => {
 
     const value = 10
     await fundUser(env.watcher, env.l1Bridge, value, wallet.address)
+    await fundUser(
+      env.watcher,
+      env.l1Bridge,
+      ethers.utils.parseEther('1'),
+      other.address
+    )
 
     const initialBalances = await getBalances()
 
-    const there = await wallet.sendTransaction({
-      to: other.address,
-      value,
-      gasPrice: 0,
-    })
-    await there.wait()
+    let there
+    if (await env.usingFeeToken) {
+      there = await env.ovmFeeToken.transfer(other.address, value)
+    } else {
+      there = await wallet.sendTransaction({
+        to: other.address,
+        value,
+        gasPrice: 0,
+      })
+    }
+    const there2 = await there.wait()
+    const fee = await env.usingFeeToken ? there.gasLimit.mul(there.gasPrice) : 0
 
     await checkBalances([
-      initialBalances[0].sub(value),
+      initialBalances[0].sub(value).sub(fee),
       initialBalances[1].add(value),
     ])
 
-    const backAgain = await other.sendTransaction({
-      to: wallet.address,
-      value,
-      gasPrice: 0,
-    })
+    let backAgain
+    if (await env.usingFeeToken) {
+      backAgain = await env.ovmFeeToken.connect(other).transfer(wallet.address, value)
+    } else {
+      backAgain = await other.sendTransaction({
+        to: wallet.address,
+        value,
+        gasPrice: 0,
+      })
+    }
     await backAgain.wait()
 
-    await checkBalances(initialBalances)
+    await checkBalances([
+      initialBalances[0].sub(fee),
+      initialBalances[1].sub(backAgain.gasLimit.mul(backAgain.gasPrice))
+    ])
   })
 
   describe(`calls between OVM contracts with native ETH value and relevant opcodes`, async () => {
@@ -76,8 +103,14 @@ describe('Native ETH value integration tests', () => {
 
     const checkBalances = async (expectedBalances: number[]) => {
       // query geth as one check
-      const balance0 = await wallet.provider.getBalance(ValueCalls0.address)
-      const balance1 = await wallet.provider.getBalance(ValueCalls1.address)
+      let balance0, balance1
+      if (await env.usingFeeToken) {
+        balance0 = await env.ovmFeeToken.balanceOf(ValueCalls0.address)
+        balance1 = await env.ovmFeeToken.balanceOf(ValueCalls1.address)
+      } else {
+        balance0 = await wallet.provider.getBalance(ValueCalls0.address)
+        balance1 = await wallet.provider.getBalance(ValueCalls1.address)
+      }
       expect(balance0).to.deep.eq(BigNumber.from(expectedBalances[0]))
       expect(balance1).to.deep.eq(BigNumber.from(expectedBalances[1]))
       // query ovmBALANCE() opcode via eth_call as another check
@@ -153,13 +186,15 @@ describe('Native ETH value integration tests', () => {
     })
 
     it('should allow ETH to be sent', async () => {
-      const sendAmount = 15
-      const tx = await ValueCalls0.simpleSend(ValueCalls1.address, sendAmount, {
-        gasPrice: 0,
-      })
-      await tx.wait()
+      if (!(await env.usingFeeToken())) {
+        const sendAmount = 15
+        const tx = await ValueCalls0.simpleSend(ValueCalls1.address, sendAmount, {
+          gasPrice: 0,
+        })
+        await tx.wait()
 
-      await checkBalances([initialBalance0 - sendAmount, sendAmount])
+        await checkBalances([initialBalance0 - sendAmount, sendAmount])
+      }
     })
 
     it('should revert if a function is nonpayable', async () => {
