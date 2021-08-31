@@ -98,15 +98,15 @@ const main = async () => {
       return contractsAccumulator
     }, {})
 
-  if (process.env.USING_FEETOKEN !== "0") {
-    if ("mockFeeToken" in contracts) {
-      contracts["feeToken"] = contracts["mockFeeToken"]
-      delete contracts["mockFeeToken"]
+  if (process.env.USING_FEETOKEN) {
+    if ('mockFeeToken' in contracts) {
+      contracts['feeToken'] = contracts['mockFeeToken']
+      delete contracts['mockFeeToken']
     } else {
-      contracts["feeToken"] = process.env.FEETOKEN
+      contracts['feeToken'] = process.env.FEETOKEN
     }
   } else {
-      contracts["feeToken"] = "0x0000000000000000000000000000000000000000"
+    contracts['feeToken'] = '0x0000000000000000000000000000000000000000'
   }
 
   contracts.OVM_Sequencer = await sequencer.getAddress()
