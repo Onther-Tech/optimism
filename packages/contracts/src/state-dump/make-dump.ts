@@ -191,8 +191,7 @@ export const makeStateDump = async (cfg: RollupDeployConfig): Promise<any> => {
   for (let i = 0; i < Object.keys(deploymentResult.contracts).length; i++) {
     const name = Object.keys(deploymentResult.contracts)[i]
 
-    if (process.env.USING_FEETOKEN !== "true"
-      && name === "OVM_FeeToken") {
+    if (!process.env.USING_FEETOKEN && name === 'OVM_FeeToken') {
       continue
     }
 

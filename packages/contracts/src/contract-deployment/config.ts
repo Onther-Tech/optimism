@@ -236,11 +236,7 @@ export const makeContractDeployConfig = async (
     },
     OVM_FeeToken: {
       factory: getContractFactory('OVM_FeeToken'),
-      params: [
-        constants.AddressZero,
-        'FeeToken',
-        'Fee'
-      ],
+      params: [constants.AddressZero, 'FeeToken', 'Fee'],
     },
     'OVM_ChainStorageContainer-CTC-batches': {
       factory: getContractFactory('OVM_ChainStorageContainer'),

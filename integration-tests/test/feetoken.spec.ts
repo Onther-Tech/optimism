@@ -1,5 +1,9 @@
 //import { predeploys, getContractInterface, getContractFactory } from '@eth-optimism/contracts'
-import { predeploys, getContractInterface, getContractFactory } from '../../packages/contracts/dist'
+import {
+  predeploys,
+  getContractInterface,
+  getContractFactory,
+} from '../../packages/contracts/dist'
 //import { getContractFactory } from '@eth-optimism/contracts'
 
 import { expect } from 'chai'
@@ -29,15 +33,13 @@ describe('FeeToken Integration Tests', async () => {
     const l1UserBalance = await l1FeeToken.balanceOf(_env.l1Wallet.address)
     const l2UserBalance = await l2FeeToken.balanceOf(_env.l2Wallet.address)
 
-    const l1BobBalance = await l1FeeToken.balanceOf(l1Bob.address) 
+    const l1BobBalance = await l1FeeToken.balanceOf(l1Bob.address)
     const l2BobBalance = await l2FeeToken.balanceOf(l2Bob.address)
 
     const sequencerBalance = await l2FeeToken.balanceOf(
       PROXY_SEQUENCER_ENTRYPOINT_ADDRESS
     )
-    const l1BridgeBalance = await l1FeeToken.balanceOf(
-      _env.l1Bridge.address
-    )
+    const l1BridgeBalance = await l1FeeToken.balanceOf(_env.l1Bridge.address)
 
     return {
       l1UserBalance,
@@ -71,11 +73,13 @@ describe('FeeToken Integration Tests', async () => {
 
   it('fee token informations', async () => {
     const addressManager = env.addressManager
-    const ctcAdress = await addressManager.getAddress('OVM_CanonicalTransactionChain')
+    const ctcAdress = await addressManager.getAddress(
+      'OVM_CanonicalTransactionChain'
+    )
     const ctc = getContractFactory('iOVM_Tokamak')
       .connect(env.l1Wallet)
       .attach(ctcAdress)
-    expect(await ctc.version()).to.equal("Natasha optimism")
+    expect(await ctc.version()).to.equal('Natasha optimism')
     expect(await ctc.usingFeeToken()).to.equal(true)
     expect(await ctc.feeToken()).to.equal(l1FeeToken.address)
   })
@@ -90,9 +94,11 @@ describe('FeeToken Integration Tests', async () => {
         l2FeeToken.address,
         depositAmount,
         DEFAULT_TEST_GAS_L2,
-        '0xFFFF', {
+        '0xFFFF',
+        {
           gasLimit: DEFAULT_TEST_GAS_L1,
-        }),
+        }
+      ),
       Direction.L1ToL2
     )
 
@@ -119,9 +125,11 @@ describe('FeeToken Integration Tests', async () => {
         l2Bob.address,
         depositAmount,
         DEFAULT_TEST_GAS_L2,
-        '0xFFFF', {
+        '0xFFFF',
+        {
           gasLimit: DEFAULT_TEST_GAS_L1,
-        }),
+        }
+      ),
       Direction.L1ToL2
     )
 
@@ -152,9 +160,11 @@ describe('FeeToken Integration Tests', async () => {
         l2FeeToken.address,
         depositAmount,
         ASSUMED_L2_GAS_LIMIT,
-        data, {
+        data,
+        {
           gasLimit: 4_000_000,
-        }),
+        }
+      ),
       Direction.L1ToL2
     )
 
@@ -181,9 +191,11 @@ describe('FeeToken Integration Tests', async () => {
         l2FeeToken.address,
         depositAmount,
         DEFAULT_TEST_GAS_L2,
-        data, {
+        data,
+        {
           gasLimit: 4_000_000,
-        })
+        }
+      )
     ).to.be.revertedWith(
       'Transaction data size exceeds maximum for rollup transaction.'
     )
@@ -266,9 +278,11 @@ describe('FeeToken Integration Tests', async () => {
         l2FeeToken.address,
         amount,
         DEFAULT_TEST_GAS_L2,
-        '0xFFFF', {
+        '0xFFFF',
+        {
           gasLimit: DEFAULT_TEST_GAS_L1,
-        }),
+        }
+      ),
       Direction.L1ToL2
     )
 
@@ -301,6 +315,8 @@ describe('FeeToken Integration Tests', async () => {
     const l1BalanceAfter = await l1FeeToken.balanceOf(other.address)
     const l2BalanceAfter = await l2FeeToken.balanceOf(other.address)
     expect(l1BalanceAfter).to.deep.eq(l1BalanceBefore.add(withdrawnAmount))
-    expect(l2BalanceAfter).to.deep.eq(l2BalanceBefore.sub(withdrawnAmount).sub(fee))
+    expect(l2BalanceAfter).to.deep.eq(
+      l2BalanceBefore.sub(withdrawnAmount).sub(fee)
+    )
   })
 })
