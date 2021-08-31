@@ -127,11 +127,7 @@ export const getL1FeeToken = async (wallet: Wallet) => {
   const addressManager = getAddressManager(wallet)
   const feeTokenAddress = addressManager.getAddress('FeeToken')
 
-  return new Contract(
-    feeTokenAddress,
-    feeTokenInterface,
-    wallet
-  )
+  return new Contract(feeTokenAddress, feeTokenInterface, wallet)
 }
 
 export const getOvmEth = (wallet: Wallet) => {
@@ -180,7 +176,8 @@ export const fundUser = async (
     recipient,
     amount,
     8_000_000,
-    '0x', {
+    '0x',
+    {
       gasLimit: 2_000_000, // Idk, gas estimation was broken and this fixes it.
     }
   )
@@ -253,4 +250,3 @@ export const waitForL2Geth = async (
   }
   return injectL2Context(provider)
 }
-

@@ -29,7 +29,7 @@ describe('Native ETH value integration tests', () => {
       if (await env.usingFeeToken) {
         return [
           await env.ovmFeeToken.balanceOf(wallet.address),
-          await env.ovmFeeToken.balanceOf(other.address)
+          await env.ovmFeeToken.balanceOf(other.address),
         ]
       } else {
         return [
@@ -69,7 +69,9 @@ describe('Native ETH value integration tests', () => {
       })
     }
     const there2 = await there.wait()
-    const fee = await env.usingFeeToken ? there.gasLimit.mul(there.gasPrice) : 0
+    const fee = (await env.usingFeeToken)
+      ? there.gasLimit.mul(there.gasPrice)
+      : 0
 
     await checkBalances([
       initialBalances[0].sub(value).sub(fee),
@@ -78,7 +80,9 @@ describe('Native ETH value integration tests', () => {
 
     let backAgain
     if (await env.usingFeeToken) {
-      backAgain = await env.ovmFeeToken.connect(other).transfer(wallet.address, value)
+      backAgain = await env.ovmFeeToken
+        .connect(other)
+        .transfer(wallet.address, value)
     } else {
       backAgain = await other.sendTransaction({
         to: wallet.address,
@@ -90,7 +94,7 @@ describe('Native ETH value integration tests', () => {
 
     await checkBalances([
       initialBalances[0].sub(fee),
-      initialBalances[1].sub(backAgain.gasLimit.mul(backAgain.gasPrice))
+      initialBalances[1].sub(backAgain.gasLimit.mul(backAgain.gasPrice)),
     ])
   })
 
@@ -103,7 +107,8 @@ describe('Native ETH value integration tests', () => {
 
     const checkBalances = async (expectedBalances: number[]) => {
       // query geth as one check
-      let balance0, balance1
+      let balance0
+      let balance1
       if (await env.usingFeeToken) {
         balance0 = await env.ovmFeeToken.balanceOf(ValueCalls0.address)
         balance1 = await env.ovmFeeToken.balanceOf(ValueCalls1.address)
@@ -188,9 +193,13 @@ describe('Native ETH value integration tests', () => {
     it('should allow ETH to be sent', async () => {
       if (!(await env.usingFeeToken())) {
         const sendAmount = 15
-        const tx = await ValueCalls0.simpleSend(ValueCalls1.address, sendAmount, {
-          gasPrice: 0,
-        })
+        const tx = await ValueCalls0.simpleSend(
+          ValueCalls1.address,
+          sendAmount,
+          {
+            gasPrice: 0,
+          }
+        )
         await tx.wait()
 
         await checkBalances([initialBalance0 - sendAmount, sendAmount])

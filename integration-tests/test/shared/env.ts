@@ -2,7 +2,10 @@
 import { Contract, utils, Wallet } from 'ethers'
 import { TransactionResponse } from '@ethersproject/providers'
 //import { getContractFactory, predeploys } from '@eth-optimism/contracts'
-import { getContractFactory, predeploys } from '../../../packages/contracts/dist'
+import {
+  getContractFactory,
+  predeploys,
+} from '../../../packages/contracts/dist'
 import { Watcher } from '@eth-optimism/core-utils'
 import { getMessagesAndProofsForL2Transaction } from '@eth-optimism/message-relayer'
 
@@ -107,9 +110,7 @@ export class OptimismEnv {
       .connect(l1Wallet)
       .attach(sccAddress)
 
-    const feeTokenAddress = await addressManager.getAddress(
-      'FeeToken'
-    )
+    const feeTokenAddress = await addressManager.getAddress('FeeToken')
     const feeToken = getContractFactory('mockFeeToken')
       .connect(l1Wallet)
       .attach(feeTokenAddress)

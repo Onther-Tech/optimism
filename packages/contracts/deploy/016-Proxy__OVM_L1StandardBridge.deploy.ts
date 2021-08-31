@@ -89,9 +89,7 @@ const deployFn: DeployFunction = async (hre) => {
     )
   }
 
-  const feeTokenAddress = await Lib_AddressManager.getAddress(
-    'FeeToken'
-  )
+  const feeTokenAddress = await Lib_AddressManager.getAddress('FeeToken')
 
   // Set Slot 2 to the L2 Standard Bridge Address
   await Proxy__WithChugSplashInterface.setStorage(

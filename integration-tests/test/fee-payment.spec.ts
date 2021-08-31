@@ -109,7 +109,6 @@ describe('Fee Payment Integration Tests', async () => {
     const balanceBefore1 = await env.feeToken.balanceOf(l1BridgeAddress)
     const l1Token = await env.ovmFeeToken.l1Token()
 
-
     const l2WalletBalance = await env.l2Wallet.getBalance()
     if (IS_LIVE_NETWORK && l2WalletBalance.lt(withdrawalAmount)) {
       console.log(
@@ -123,15 +122,16 @@ describe('Fee Payment Integration Tests', async () => {
     // Transfer the minimum required to withdraw.
     let vaultBalance
     if (await env.usingFeeToken()) {
-      await env.ovmFeeToken.transfer(ovmSequencerFeeVault.address, withdrawalAmount)
+      await env.ovmFeeToken.transfer(
+        ovmSequencerFeeVault.address,
+        withdrawalAmount
+      )
       vaultBalance = await env.ovmFeeToken.balanceOf(
         ovmSequencerFeeVault.address
       )
     } else {
       await env.ovmEth.transfer(ovmSequencerFeeVault.address, withdrawalAmount)
-      vaultBalance = await env.ovmEth.balanceOf(
-        ovmSequencerFeeVault.address
-      )
+      vaultBalance = await env.ovmEth.balanceOf(ovmSequencerFeeVault.address)
     }
 
     // Submit the withdrawal.

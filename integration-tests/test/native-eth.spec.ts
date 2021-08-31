@@ -361,9 +361,9 @@ describe('Native ETH Integration Tests', async () => {
       const depositTx = await env.ovmEth.deposit({ value, gasPrice: 0 })
       const receipt = await depositTx.wait()
 
-      expect(
-        await env.ovmEth.balanceOf(env.l2Wallet.address)
-      ).to.equal(initialBalance)
+      expect(await env.ovmEth.balanceOf(env.l2Wallet.address)).to.equal(
+        initialBalance
+      )
       expect(receipt.events.length).to.equal(4)
 
       // The first transfer event is fee payment
@@ -393,17 +393,17 @@ describe('Native ETH Integration Tests', async () => {
       })
       const receipt = await fallbackTx.wait()
       expect(receipt.status).to.equal(1)
-      expect(
-        await env.ovmEth.balanceOf(env.l2Wallet.address)
-      ).to.equal(initialBalance)
+      expect(await env.ovmEth.balanceOf(env.l2Wallet.address)).to.equal(
+        initialBalance
+      )
     })
 
     it('successfully withdraws', async () => {
       const withdrawTx = await env.ovmEth.withdraw(value, { gasPrice: 0 })
       const receipt = await withdrawTx.wait()
-      expect(
-        await env.ovmEth.balanceOf(env.l2Wallet.address)
-      ).to.equal(initialBalance)
+      expect(await env.ovmEth.balanceOf(env.l2Wallet.address)).to.equal(
+        initialBalance
+      )
       expect(receipt.events.length).to.equal(2)
 
       // The first transfer event is fee payment
