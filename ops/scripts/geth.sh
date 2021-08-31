@@ -25,7 +25,7 @@ if [[ ! -z "$URL" ]]; then
     if [ $ETH1_L1_STANDARD_BRIDGE_ADDRESS == null ]; then
         envSet ETH1_L1_STANDARD_BRIDGE_ADDRESS OVM_L1StandardBridge
     fi
-    envSet ETH1_L1_FEE_TOKEN_ADDRESS mockFeeToken
+    envSet ETH1_L1_FEE_TOKEN_ADDRESS feeToken
 fi
 
 # wait for the dtl to be up, else geth will crash if it cannot connect
