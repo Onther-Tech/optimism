@@ -1,7 +1,11 @@
 /* Imports: External */
 import { Contract, utils, Wallet } from 'ethers'
 import { TransactionResponse } from '@ethersproject/providers'
-import { getContractFactory, predeploys } from '@eth-optimism/contracts'
+//import { getContractFactory, predeploys } from '@eth-optimism/contracts'
+import {
+  getContractFactory,
+  predeploys,
+} from '../../../packages/contracts/dist'
 import { Watcher } from '@eth-optimism/core-utils'
 import { getMessagesAndProofsForL2Transaction } from '@eth-optimism/message-relayer'
 
@@ -14,6 +18,7 @@ import {
   l2Wallet,
   fundUser,
   getOvmEth,
+  getOvmFeeToken,
   getL1Bridge,
   getL2Bridge,
   IS_LIVE_NETWORK,
@@ -34,9 +39,11 @@ export class OptimismEnv {
   l1Messenger: Contract
   ctc: Contract
   scc: Contract
+  feeToken: Contract
 
   // L2 Contracts
   ovmEth: Contract
+  ovmFeeToken: Contract
   l2Bridge: Contract
   l2Messenger: Contract
   gasPriceOracle: Contract
@@ -53,6 +60,7 @@ export class OptimismEnv {
     this.l1Bridge = args.l1Bridge
     this.l1Messenger = args.l1Messenger
     this.ovmEth = args.ovmEth
+    this.ovmFeeToken = args.ovmFeeToken
     this.l2Bridge = args.l2Bridge
     this.l2Messenger = args.l2Messenger
     this.gasPriceOracle = args.gasPriceOracle
@@ -61,6 +69,7 @@ export class OptimismEnv {
     this.l2Wallet = args.l2Wallet
     this.ctc = args.ctc
     this.scc = args.scc
+    this.feeToken = args.feeToken
   }
 
   static async new(): Promise<OptimismEnv> {
@@ -77,6 +86,7 @@ export class OptimismEnv {
       .connect(l1Wallet)
       .attach(watcher.l1.messengerAddress)
     const ovmEth = getOvmEth(l2Wallet)
+    const ovmFeeToken = getOvmFeeToken(l2Wallet)
     const l2Bridge = await getL2Bridge(l2Wallet)
     const l2Messenger = getContractFactory('iOVM_L2CrossDomainMessenger')
       .connect(l2Wallet)
@@ -100,13 +110,20 @@ export class OptimismEnv {
       .connect(l1Wallet)
       .attach(sccAddress)
 
+    const feeTokenAddress = await addressManager.getAddress('FeeToken')
+    const feeToken = getContractFactory('mockFeeToken')
+      .connect(l1Wallet)
+      .attach(feeTokenAddress)
+
     return new OptimismEnv({
       addressManager,
       l1Bridge,
       ctc,
       scc,
+      feeToken,
       l1Messenger,
       ovmEth,
+      ovmFeeToken,
       gasPriceOracle,
       l2Bridge,
       l2Messenger,
@@ -121,6 +138,11 @@ export class OptimismEnv {
     direction: Direction
   ): Promise<CrossDomainMessagePair> {
     return waitForXDomainTransaction(this.watcher, tx, direction)
+  }
+
+  async usingFeeToken(): Promise<boolean> {
+    const code = await l2Provider.getCode(predeploys.OVM_FeeToken)
+    return code.length !== 0
   }
 
   /**

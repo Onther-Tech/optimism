@@ -5,7 +5,8 @@ chai.use(chaiAsPromised)
 /* Imports: External */
 import { ethers, BigNumber, Contract, utils } from 'ethers'
 import { TxGasLimit, TxGasPrice } from '@eth-optimism/core-utils'
-import { predeploys, getContractInterface } from '@eth-optimism/contracts'
+//import { predeploys, getContractInterface } from '@eth-optimism/contracts'
+import { predeploys, getContractInterface } from '../../packages/contracts/dist'
 
 /* Imports: Internal */
 import { IS_LIVE_NETWORK } from './shared/utils'
@@ -59,7 +60,13 @@ describe('Fee Payment Integration Tests', async () => {
     )
     expect(balanceBefore.gt(amount))
 
-    const tx = await env.ovmEth.transfer(other, amount)
+    let tx
+    if (await env.usingFeeToken()) {
+      tx = await env.ovmFeeToken.transfer(other, amount)
+    } else {
+      tx = await env.ovmEth.transfer(other, amount)
+    }
+
     const receipt = await tx.wait()
     expect(receipt.status).to.eq(1)
 
@@ -87,8 +94,20 @@ describe('Fee Payment Integration Tests', async () => {
 
   it('should be able to withdraw fees back to L1 once the minimum is met', async function () {
     const l1FeeWallet = await ovmSequencerFeeVault.l1FeeWallet()
-    const balanceBefore = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    let balanceBefore
+    if (await env.usingFeeToken()) {
+      balanceBefore = await env.feeToken.balanceOf(l1FeeWallet)
+    } else {
+      balanceBefore = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    }
     const withdrawalAmount = await ovmSequencerFeeVault.MIN_WITHDRAWAL_AMOUNT()
+
+    /// test
+    const l1BridgeAddress = await env.addressManager.getAddress(
+      'Proxy__OVM_L1StandardBridge'
+    )
+    const balanceBefore1 = await env.feeToken.balanceOf(l1BridgeAddress)
+    const l1Token = await env.ovmFeeToken.l1Token()
 
     const l2WalletBalance = await env.l2Wallet.getBalance()
     if (IS_LIVE_NETWORK && l2WalletBalance.lt(withdrawalAmount)) {
@@ -101,11 +120,19 @@ describe('Fee Payment Integration Tests', async () => {
     }
 
     // Transfer the minimum required to withdraw.
-    await env.ovmEth.transfer(ovmSequencerFeeVault.address, withdrawalAmount)
-
-    const vaultBalance = await env.ovmEth.balanceOf(
-      ovmSequencerFeeVault.address
-    )
+    let vaultBalance
+    if (await env.usingFeeToken()) {
+      await env.ovmFeeToken.transfer(
+        ovmSequencerFeeVault.address,
+        withdrawalAmount
+      )
+      vaultBalance = await env.ovmFeeToken.balanceOf(
+        ovmSequencerFeeVault.address
+      )
+    } else {
+      await env.ovmEth.transfer(ovmSequencerFeeVault.address, withdrawalAmount)
+      vaultBalance = await env.ovmEth.balanceOf(ovmSequencerFeeVault.address)
+    }
 
     // Submit the withdrawal.
     const withdrawTx = await ovmSequencerFeeVault.withdraw({
@@ -116,7 +143,19 @@ describe('Fee Payment Integration Tests', async () => {
     await env.waitForXDomainTransaction(withdrawTx, Direction.L2ToL1)
 
     // Balance difference should be equal to old L2 balance.
-    const balanceAfter = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    let balanceAfter
+    if (await env.usingFeeToken()) {
+      balanceAfter = await env.feeToken.balanceOf(l1FeeWallet)
+    } else {
+      balanceAfter = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    }
+
+    const vaultBalance2 = await env.ovmFeeToken.balanceOf(
+      ovmSequencerFeeVault.address
+    )
+
+    const balanceBefore2 = await env.feeToken.balanceOf(l1BridgeAddress)
+
     expect(balanceAfter.sub(balanceBefore)).to.deep.equal(
       BigNumber.from(vaultBalance)
     )

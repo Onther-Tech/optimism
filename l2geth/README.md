@@ -49,6 +49,7 @@ $ USING_OVM=true ./build/bin/geth \
     --eth1.networkid $LAYER1_NETWORK_ID \
     --eth1.chainid $LAYER1_CHAIN_ID \
     --eth1.l1standardbridgeaddress $ETH1_L1_STANDARD_BRIDGE_ADDRESS \
+    --eth1.l1feetokenaddress $ETH1_L1_FEE_TOKEN_ADDRESS \
     --eth1.l1crossdomainmessengeraddress $ETH1_L1_CROSS_DOMAIN_MESSENGER_ADDRESS \
     --eth1.l1feewalletaddress $ETH1_L1_FEE_WALLET_ADDRESS \
     --eth1.addressresolveraddress $ETH1_ADDRESS_RESOLVER_ADDRESS \

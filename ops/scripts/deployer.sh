@@ -18,5 +18,7 @@ curl \
 
 yarn run deploy
 
+[[ "$USING_FEETOKEN" == "1" || "$USING_FEETOKEN" == "true" ]] && yarn run build:dump
+
 # serve the addrs and the state dump
 exec ./bin/serve_dump.sh

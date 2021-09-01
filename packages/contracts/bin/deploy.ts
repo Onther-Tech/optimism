@@ -68,6 +68,8 @@ const main = async () => {
     ovmRelayerAddress: sequencer.address,
     ovmAddressManagerOwner: deployer.address,
     noCompile: process.env.NO_COMPILE ? true : false,
+    usingFeeToken: process.env.USING_FEETOKEN ? true : false,
+    feeTokenAddress: process.env.FEETOKEN,
   })
 
   // Stuff below this line is currently required for CI to work properly. We probably want to
@@ -95,6 +97,17 @@ const main = async () => {
         artifact.address
       return contractsAccumulator
     }, {})
+
+  if (process.env.USING_FEETOKEN) {
+    if ('mockFeeToken' in contracts) {
+      contracts['feeToken'] = contracts['mockFeeToken']
+      delete contracts['mockFeeToken']
+    } else {
+      contracts['feeToken'] = process.env.FEETOKEN
+    }
+  } else {
+    contracts['feeToken'] = '0x0000000000000000000000000000000000000000'
+  }
 
   contracts.OVM_Sequencer = await sequencer.getAddress()
   contracts.Deployer = await deployer.getAddress()

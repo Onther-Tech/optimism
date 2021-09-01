@@ -267,7 +267,7 @@ func (s *StateDB) GetBalance(addr common.Address) *big.Int {
 	return common.Big0
 }
 
-func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
+func (s *StateDB) GetETHBalance(addr common.Address) *big.Int {
 	eth := common.HexToAddress("0x4200000000000000000000000000000000000006")
 	position := big.NewInt(0)
 	hasher := sha3.NewLegacyKeccak256()
@@ -277,6 +277,28 @@ func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
 	key := common.BytesToHash(digest)
 	slot := s.GetState(eth, key)
 	return slot.Big()
+}
+
+func (s *StateDB) GetFeeBalance(addr common.Address) *big.Int {
+	eth := common.HexToAddress("0x4200000000000000000000000000000000000100")
+	position := big.NewInt(0)
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(common.LeftPadBytes(addr.Bytes(), 32))
+	hasher.Write(common.LeftPadBytes(position.Bytes(), 32))
+	digest := hasher.Sum(nil)
+	key := common.BytesToHash(digest)
+	slot := s.GetState(eth, key)
+	return slot.Big()
+}
+
+func (s *StateDB) GetOVMBalance(addr common.Address) *big.Int {
+	fee := common.HexToAddress("0x4200000000000000000000000000000000000100")
+	size := s.GetCodeSize(fee)
+	if size == 0 {
+		return s.GetETHBalance(addr)
+	}
+
+	return s.GetFeeBalance(addr)
 }
 
 func (s *StateDB) GetNonce(addr common.Address) uint64 {

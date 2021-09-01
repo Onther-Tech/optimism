@@ -105,7 +105,7 @@ describe('OVM Context: Layer 2 EVM Context', () => {
       const blockNumber = BigNumber.from(returnData[1])
       const tx = block.transactions[0] as any
 
-      expect(tx.l1BlockNumber).to.deep.equal(blockNumber.toNumber())
+      expect(Number(tx.l1BlockNumber)).to.deep.equal(blockNumber.toNumber())
       expect(block.timestamp).to.deep.equal(timestamp.toNumber())
     }
   })

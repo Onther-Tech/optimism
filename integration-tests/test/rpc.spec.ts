@@ -102,12 +102,13 @@ describe('Basic RPC tests', () => {
         value: ethers.utils.parseEther('0.1'),
       }
 
-      const balanceBefore = await provider.getBalance(env.l2Wallet.address)
+      //const balanceBefore = await provider.getBalance(env.l2Wallet.address)
+      const balanceBefore = await env.ovmEth.balanceOf(env.l2Wallet.address)
       const result = await env.l2Wallet.sendTransaction(tx)
       const receipt = await result.wait()
       expect(receipt.status).to.deep.equal(1)
 
-      expect(await provider.getBalance(env.l2Wallet.address)).to.deep.equal(
+      expect(await env.ovmEth.balanceOf(env.l2Wallet.address)).to.deep.equal(
         balanceBefore.sub(ethers.utils.parseEther('0.1'))
       )
     })
@@ -328,10 +329,12 @@ describe('Basic RPC tests', () => {
 
       // Get latest block once to start.
       const prev = await provider.getBlockWithTransactions('latest')
+      prev.transactions[0].wait = null
 
       // Over ten seconds, repeatedly check the latest block to make sure nothing has changed.
       for (let i = 0; i < 5; i++) {
         const latest = await provider.getBlockWithTransactions('latest')
+        latest.transactions[0].wait = null
         expect(latest).to.deep.equal(prev)
         await sleep(2000)
       }
@@ -340,7 +343,8 @@ describe('Basic RPC tests', () => {
 
   describe('eth_getBalance', () => {
     it('should get the OVM_ETH balance', async () => {
-      const rpcBalance = await provider.getBalance(env.l2Wallet.address)
+      //const rpcBalance = await provider.getBalance(env.l2Wallet.address)
+      const rpcBalance = await env.ovmEth.balanceOf(env.l2Wallet.address)
       const contractBalance = await env.ovmEth.balanceOf(env.l2Wallet.address)
       expect(rpcBalance).to.be.deep.eq(contractBalance)
     })

@@ -6,6 +6,7 @@ import { Lib_PredeployAddresses } from "../../libraries/constants/Lib_PredeployA
 
 /* Contract Imports */
 import { OVM_ETH } from "../predeploys/OVM_ETH.sol";
+import { OVM_FeeToken } from "../predeploys/OVM_FeeToken.sol";
 import { OVM_L2StandardBridge } from "../bridge/tokens/OVM_L2StandardBridge.sol";
 
 /**
@@ -57,7 +58,16 @@ contract OVM_SequencerFeeVault {
     function withdraw()
         public
     {
-        uint256 balance = OVM_ETH(Lib_PredeployAddresses.OVM_ETH).balanceOf(address(this));
+        address feeAddress;
+        uint256 balance;
+        if (useFeeToken()) {
+            feeAddress = Lib_PredeployAddresses.OVM_FEETOKEN;
+            balance = OVM_FeeToken(Lib_PredeployAddresses.OVM_FEETOKEN).balanceOf(address(this));
+        } else {
+            feeAddress = Lib_PredeployAddresses.OVM_ETH;
+            balance = OVM_ETH(Lib_PredeployAddresses.OVM_ETH).balanceOf(address(this));
+        }
+        
 
         require(
             balance >= MIN_WITHDRAWAL_AMOUNT,
@@ -66,11 +76,20 @@ contract OVM_SequencerFeeVault {
         );
 
         OVM_L2StandardBridge(Lib_PredeployAddresses.L2_STANDARD_BRIDGE).withdrawTo(
-            Lib_PredeployAddresses.OVM_ETH,
+            feeAddress,
             l1FeeWallet,
             balance,
             0,
             bytes("")
         );
+    }
+
+    function useFeeToken() internal view returns (bool) {
+        uint256 size;
+        address addr = Lib_PredeployAddresses.OVM_FEETOKEN;
+        assembly {
+            size := extcodesize(addr)
+        }
+        return size > 0;
     }
 }

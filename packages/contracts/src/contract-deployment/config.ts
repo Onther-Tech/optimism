@@ -70,6 +70,10 @@ export const makeContractDeployConfig = async (
   }
 
   return {
+    FeeToken: {
+      factory: getContractFactory('mockFeeToken'),
+      params: [],
+    },
     OVM_L2CrossDomainMessenger: {
       factory: getContractFactory('OVM_L2CrossDomainMessenger'),
       params: [AddressManager.address],
@@ -229,6 +233,10 @@ export const makeContractDeployConfig = async (
     OVM_ETH: {
       factory: getContractFactory('OVM_ETH'),
       params: [],
+    },
+    OVM_FeeToken: {
+      factory: getContractFactory('OVM_FeeToken'),
+      params: [constants.AddressZero, 'FeeToken', 'Fee'],
     },
     'OVM_ChainStorageContainer-CTC-batches': {
       factory: getContractFactory('OVM_ChainStorageContainer'),

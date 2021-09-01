@@ -13,6 +13,9 @@ const deployFn: DeployFunction = async (hre) => {
     'Lib_AddressManager'
   )
 
+  const usingFeeToken = (hre as any).deployConfig.usingFeeToken
+  const feeTokenAddress = await Lib_AddressManager.getAddress('FeeToken')
+
   await deployAndRegister({
     hre,
     name: 'OVM_CanonicalTransactionChain',
@@ -21,6 +24,8 @@ const deployFn: DeployFunction = async (hre) => {
       (hre as any).deployConfig.ctcForceInclusionPeriodSeconds,
       (hre as any).deployConfig.ctcForceInclusionPeriodBlocks,
       (hre as any).deployConfig.ctcMaxTransactionGasLimit,
+      usingFeeToken,
+      feeTokenAddress,
     ],
   })
 }

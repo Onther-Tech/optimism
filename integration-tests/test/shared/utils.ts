@@ -10,11 +10,16 @@ import {
   BigNumber,
   utils,
 } from 'ethers'
+/*import {
+  getContractFactory,
+  getContractInterface,
+  predeploys,
+} from '@eth-optimism/contracts'*/
 import {
   getContractFactory,
   getContractInterface,
   predeploys,
-} from '@eth-optimism/contracts'
+} from '../../../packages/contracts/dist'
 import { injectL2Context, remove0x, Watcher } from '@eth-optimism/core-utils'
 import { cleanEnv, str, num, bool } from 'envalid'
 import dotenv from 'dotenv'
@@ -72,6 +77,7 @@ export const l2Wallet = l1Wallet.connect(l2Provider)
 export const PROXY_SEQUENCER_ENTRYPOINT_ADDRESS =
   '0x4200000000000000000000000000000000000004'
 export const OVM_ETH_ADDRESS = predeploys.OVM_ETH
+export const OVM_FEETOKEN_ADDRESS = predeploys.OVM_FeeToken
 
 export const L2_CHAINID = env.L2_CHAINID
 export const IS_LIVE_NETWORK = env.IS_LIVE_NETWORK
@@ -115,6 +121,15 @@ export const getL2Bridge = async (wallet: Wallet) => {
   return OVM_L2StandardBridge
 }
 
+export const getL1FeeToken = async (wallet: Wallet) => {
+  const feeTokenInterface = getContractInterface('mockFeeToken')
+
+  const addressManager = getAddressManager(wallet)
+  const feeTokenAddress = addressManager.getAddress('FeeToken')
+
+  return new Contract(feeTokenAddress, feeTokenInterface, wallet)
+}
+
 export const getOvmEth = (wallet: Wallet) => {
   const OVM_ETH = new Contract(
     OVM_ETH_ADDRESS,
@@ -123,6 +138,16 @@ export const getOvmEth = (wallet: Wallet) => {
   )
 
   return OVM_ETH
+}
+
+export const getOvmFeeToken = (wallet: Wallet) => {
+  const OVM_FEETOKEN = new Contract(
+    OVM_FEETOKEN_ADDRESS,
+    getContractInterface('OVM_FeeToken'),
+    wallet
+  )
+
+  return OVM_FEETOKEN
 }
 
 export const fundUser = async (
@@ -137,6 +162,27 @@ export const fundUser = async (
     : bridge.depositETH(1_300_000, '0x', { value })
 
   await waitForXDomainTransaction(watcher, tx, Direction.L1ToL2)
+
+  const feeToken = await getL1FeeToken(l1Wallet)
+  recipient = recipient ? recipient : l1Wallet.address
+  await feeToken.mint(recipient, amount)
+
+  const l1Bridge = await getL1Bridge(l1Wallet, getAddressManager(l1Wallet))
+  //await feeToken.connect(recipient).approve(l1Bridge.address, amount)
+  await feeToken.connect(l1Wallet).approve(l1Bridge.address, amount)
+  const tx3 = await l1Bridge.depositERC20To(
+    feeToken.address,
+    predeploys.OVM_FeeToken,
+    recipient,
+    amount,
+    8_000_000,
+    '0x',
+    {
+      gasLimit: 2_000_000, // Idk, gas estimation was broken and this fixes it.
+    }
+  )
+
+  await waitForXDomainTransaction(watcher, tx3, Direction.L1ToL2)
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
