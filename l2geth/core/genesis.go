@@ -274,7 +274,7 @@ func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
 // It is fragile to storage slots changing as it directly writes to storage
 // slots instead of applying messages with well formed calldata.
 // This function could be replaced in the future using GenesisAlloc
-func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDomainMessengerAddress, l1StandardBridgeAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, chainID *big.Int, gasLimit uint64) {
+func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDomainMessengerAddress, l1StandardBridgeAddress, l1FeeTokenAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, chainID *big.Int, gasLimit uint64) {
 	if len(stateDump.Accounts) == 0 {
 		return
 	}
@@ -492,14 +492,7 @@ func DefaultGoerliGenesisBlock() *Genesis {
 
 // UsingOVM
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block.
-<<<<<<< HEAD
 func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress common.Address, l1StandardBridgeAddress common.Address, l1FeeTokenAddress common.Address, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, stateDumpPath string, chainID *big.Int, gasLimit uint64) *Genesis {
-=======
-// Additional runtime parameters are passed through that impact
-// the genesis state. An "incompatible genesis block" error means that
-// these params were altered since the initial creation of the datadir.
-func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress common.Address, l1StandardBridgeAddress common.Address, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, stateDumpPath string, chainID *big.Int, gasLimit uint64) *Genesis {
->>>>>>> 25c79ce437aec42f776349dcc18cd6cac9ebf5bc
 	// Override the default period to the user requested one
 	config := *params.AllCliqueProtocolChanges
 	config.Clique.Period = period
