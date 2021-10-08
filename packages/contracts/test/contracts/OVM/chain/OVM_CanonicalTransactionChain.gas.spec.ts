@@ -26,6 +26,9 @@ import { predeploys } from '../../../../src'
 // this is probably cleaner for now. Particularly since we're planning to move all of this out into
 // core-utils soon anyway.
 const MAX_GAS_LIMIT = 8_000_000
+const DUMMY_FEE_TOKEN_ADDRESS = ethers.utils.getAddress(
+  '0x' + 'acdc'.repeat(10)
+)
 
 const appendSequencerBatch = async (
   OVM_CanonicalTransactionChain: Contract,
@@ -103,7 +106,9 @@ describe('[GAS BENCHMARK] OVM_CanonicalTransactionChain', () => {
         AddressManager.address,
         FORCE_INCLUSION_PERIOD_SECONDS,
         FORCE_INCLUSION_PERIOD_BLOCKS,
-        MAX_GAS_LIMIT
+        MAX_GAS_LIMIT,
+        true,
+        DUMMY_FEE_TOKEN_ADDRESS
       )
 
     const batches = await Factory__OVM_ChainStorageContainer.deploy(

@@ -18,6 +18,9 @@ const DUMMY_L2_ERC20_ADDRESS = ethers.utils.getAddress('0x' + 'abba'.repeat(10))
 const DUMMY_L2_BRIDGE_ADDRESS = ethers.utils.getAddress(
   '0x' + 'acdc'.repeat(10)
 )
+const DUMMY_FEE_TOKEN_ADDRESS = ethers.utils.getAddress(
+  '0x' + 'acdc'.repeat(10)
+)
 
 const INITIAL_TOTAL_L1_SUPPLY = 5000
 const FINALIZATION_GAS = 1_200_000
@@ -67,7 +70,8 @@ describe('OVM_L1StandardBridge', () => {
     ).deploy()
     await OVM_L1StandardBridge.initialize(
       Mock__OVM_L1CrossDomainMessenger.address,
-      DUMMY_L2_BRIDGE_ADDRESS
+      DUMMY_L2_BRIDGE_ADDRESS,
+      DUMMY_FEE_TOKEN_ADDRESS
     )
 
     L1ERC20 = await Factory__L1ERC20.deploy('L1ERC20', 'ERC')
@@ -84,7 +88,8 @@ describe('OVM_L1StandardBridge', () => {
       await expect(
         OVM_L1StandardBridge.initialize(
           ethers.constants.AddressZero,
-          DUMMY_L2_BRIDGE_ADDRESS
+          DUMMY_L2_BRIDGE_ADDRESS,
+          DUMMY_FEE_TOKEN_ADDRESS
         )
       ).to.be.revertedWith(ERR_ALREADY_INITIALIZED)
     })
@@ -215,7 +220,8 @@ describe('OVM_L1StandardBridge', () => {
       ).deploy()
       await OVM_L1StandardBridge.initialize(
         Mock__OVM_L1CrossDomainMessenger.address,
-        DUMMY_L2_BRIDGE_ADDRESS
+        DUMMY_L2_BRIDGE_ADDRESS,
+        DUMMY_FEE_TOKEN_ADDRESS
       )
 
       Mock__OVM_L1CrossDomainMessenger.smocked.xDomainMessageSender.will.return.with(

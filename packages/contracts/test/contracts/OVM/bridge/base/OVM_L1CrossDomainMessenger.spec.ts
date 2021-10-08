@@ -24,6 +24,9 @@ import { keccak256 } from 'ethers/lib/utils'
 import { predeploys } from '../../../../../src'
 
 const MAX_GAS_LIMIT = 8_000_000
+const DUMMY_FEE_TOKEN_ADDRESS = ethers.utils.getAddress(
+  '0x' + 'acdc'.repeat(10)
+)
 
 const deployProxyXDomainMessenger = async (
   addressManager: Contract,
@@ -98,7 +101,9 @@ describe('OVM_L1CrossDomainMessenger', () => {
         AddressManager.address,
         FORCE_INCLUSION_PERIOD_SECONDS,
         FORCE_INCLUSION_PERIOD_BLOCKS,
-        MAX_GAS_LIMIT
+        MAX_GAS_LIMIT,
+        true,
+        DUMMY_FEE_TOKEN_ADDRESS
       )
 
     const batches = await Factory__OVM_ChainStorageContainer.deploy(
