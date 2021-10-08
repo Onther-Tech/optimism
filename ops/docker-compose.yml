@@ -201,7 +201,7 @@ services:
       NO_NETWORK: 1
 
   gas_oracle:
-    image: ethereumoptimism/gas-oracle
+    image: onthertech/optimism.gas-oracle
     deploy:
        replicas: 0
     build:
