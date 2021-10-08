@@ -1,11 +1,15 @@
 /* Imports: External */
 import { Contract, utils, Wallet } from 'ethers'
 import { TransactionResponse } from '@ethersproject/providers'
+<<<<<<< HEAD
 //import { getContractFactory, predeploys } from '@eth-optimism/contracts'
 import {
   getContractFactory,
   predeploys,
 } from '../../../packages/contracts/dist'
+=======
+import { getContractFactory, predeploys } from '@eth-optimism/contracts'
+>>>>>>> 25c79ce437aec42f776349dcc18cd6cac9ebf5bc
 import { Watcher } from '@eth-optimism/core-utils'
 import { getMessagesAndProofsForL2Transaction } from '@eth-optimism/message-relayer'
 
@@ -191,6 +195,8 @@ export class OptimismEnv {
           break
         } catch (err) {
           if (err.message.includes('execution failed due to an exception')) {
+            await sleep(5000)
+          } else if (err.message.includes('Nonce too low')) {
             await sleep(5000)
           } else if (
             err.message.includes('message has already been received')

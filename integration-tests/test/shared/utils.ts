@@ -10,16 +10,11 @@ import {
   BigNumber,
   utils,
 } from 'ethers'
-/*import {
-  getContractFactory,
-  getContractInterface,
-  predeploys,
-} from '@eth-optimism/contracts'*/
 import {
   getContractFactory,
   getContractInterface,
   predeploys,
-} from '../../../packages/contracts/dist'
+} from '@eth-optimism/contracts'
 import { injectL2Context, remove0x, Watcher } from '@eth-optimism/core-utils'
 import { cleanEnv, str, num, bool } from 'envalid'
 import dotenv from 'dotenv'
@@ -78,6 +73,9 @@ export const PROXY_SEQUENCER_ENTRYPOINT_ADDRESS =
   '0x4200000000000000000000000000000000000004'
 export const OVM_ETH_ADDRESS = predeploys.OVM_ETH
 export const OVM_FEETOKEN_ADDRESS = predeploys.OVM_FeeToken
+
+export const L2_CHAINID = env.L2_CHAINID
+export const IS_LIVE_NETWORK = env.IS_LIVE_NETWORK
 
 export const L2_CHAINID = env.L2_CHAINID
 export const IS_LIVE_NETWORK = env.IS_LIVE_NETWORK
