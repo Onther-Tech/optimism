@@ -94,8 +94,20 @@ describe('Fee Payment Integration Tests', async () => {
 
   it('should be able to withdraw fees back to L1 once the minimum is met', async function () {
     const l1FeeWallet = await ovmSequencerFeeVault.l1FeeWallet()
-    const balanceBefore = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    let balanceBefore
+    if (await env.usingFeeToken()) {
+      balanceBefore = await env.feeToken.balanceOf(l1FeeWallet)
+    } else {
+      balanceBefore = await env.l1Wallet.provider.getBalance(l1FeeWallet)
+    }
     const withdrawalAmount = await ovmSequencerFeeVault.MIN_WITHDRAWAL_AMOUNT()
+
+    /// test
+    const l1BridgeAddress = await env.addressManager.getAddress(
+      'Proxy__OVM_L1StandardBridge'
+    )
+    const balanceBefore1 = await env.feeToken.balanceOf(l1BridgeAddress)
+    const l1Token = await env.ovmFeeToken.l1Token()
 
     const l2WalletBalance = await env.l2Wallet.getBalance()
     if (IS_LIVE_NETWORK && l2WalletBalance.lt(withdrawalAmount)) {
@@ -106,9 +118,6 @@ describe('Fee Payment Integration Tests', async () => {
       )
       this.skip()
     }
-
-    // Transfer the minimum required to withdraw.
-    await env.ovmEth.transfer(ovmSequencerFeeVault.address, withdrawalAmount)
 
     // Transfer the minimum required to withdraw.
     let vaultBalance

@@ -77,9 +77,6 @@ export const OVM_FEETOKEN_ADDRESS = predeploys.OVM_FeeToken
 export const L2_CHAINID = env.L2_CHAINID
 export const IS_LIVE_NETWORK = env.IS_LIVE_NETWORK
 
-export const L2_CHAINID = env.L2_CHAINID
-export const IS_LIVE_NETWORK = env.IS_LIVE_NETWORK
-
 export const getAddressManager = (provider: any) => {
   return getContractFactory('Lib_AddressManager')
     .connect(provider)
