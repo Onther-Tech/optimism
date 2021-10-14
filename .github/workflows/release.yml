@@ -62,7 +62,6 @@ jobs:
 
   gas-oracle:
     name: Publish Gas Oracle
-    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
