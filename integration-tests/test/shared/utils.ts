@@ -10,16 +10,11 @@ import {
   BigNumber,
   utils,
 } from 'ethers'
-/*import {
-  getContractFactory,
-  getContractInterface,
-  predeploys,
-} from '@eth-optimism/contracts'*/
 import {
   getContractFactory,
   getContractInterface,
   predeploys,
-} from '../../../packages/contracts/dist'
+} from '@eth-optimism/contracts'
 import { injectL2Context, remove0x, Watcher } from '@eth-optimism/core-utils'
 import { cleanEnv, str, num, bool } from 'envalid'
 import dotenv from 'dotenv'

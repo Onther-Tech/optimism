@@ -268,7 +268,12 @@ func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
 	}
 }
 
-// ApplyOvmStateToState applies the initial OVM state to a state object.
+// UsingOVM
+// ApplyOvmStateToState applies the initial OVM state to a statedb.
+// It inserts a bunch of runtime config into the state.
+// It is fragile to storage slots changing as it directly writes to storage
+// slots instead of applying messages with well formed calldata.
+// This function could be replaced in the future using GenesisAlloc
 func ApplyOvmStateToState(statedb *state.StateDB, stateDump *dump.OvmDump, l1XDomainMessengerAddress, l1StandardBridgeAddress, l1FeeTokenAddress, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, chainID *big.Int, gasLimit uint64) {
 	if len(stateDump.Accounts) == 0 {
 		return
@@ -485,6 +490,7 @@ func DefaultGoerliGenesisBlock() *Genesis {
 	}
 }
 
+// UsingOVM
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block.
 func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress common.Address, l1StandardBridgeAddress common.Address, l1FeeTokenAddress common.Address, addrManagerOwnerAddress, gpoOwnerAddress, l1FeeWalletAddress common.Address, stateDumpPath string, chainID *big.Int, gasLimit uint64) *Genesis {
 	// Override the default period to the user requested one
@@ -498,6 +504,10 @@ func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress comm
 	stateDump := dump.OvmDump{}
 	if vm.UsingOVM {
 		// Fetch the state dump from the state dump path
+		// The system cannot start without a state dump as it depends on
+		// the ABIs that are included in the state dump. Check that all
+		// required state dump entries are present to prevent a faulty
+		// state dump from being used
 		if stateDumpPath == "" {
 			panic("Must pass state dump path")
 		}
@@ -541,6 +551,9 @@ func DeveloperGenesisBlock(period uint64, faucet, l1XDomainMessengerAddress comm
 			common.BytesToAddress([]byte{7}): {Balance: big.NewInt(1)}, // ECScalarMul
 			common.BytesToAddress([]byte{8}): {Balance: big.NewInt(1)}, // ECPairing
 		},
+		// UsingOVM
+		// Add additional properties to the genesis block so that they can
+		// be added into the initial genesis state at runtime
 		L1CrossDomainMessengerAddress: l1XDomainMessengerAddress,
 		L1FeeWalletAddress:            l1FeeWalletAddress,
 		AddressManagerOwnerAddress:    addrManagerOwnerAddress,
@@ -563,6 +576,10 @@ func decodePrealloc(data string) GenesisAlloc {
 	return ga
 }
 
+// UsingOVM
+// fetchStateDump will fetch a state dump from a remote HTTP endpoint.
+// This state dump includes the OVM system contracts as well as previous
+// user state if the network has previously had a regenesis.
 func fetchStateDump(path string, stateDump *dump.OvmDump) error {
 	if stateDump == nil {
 		return errors.New("Unable to fetch state dump")

@@ -33,7 +33,8 @@ import { Math } from "@openzeppelin/contracts/math/Math.sol";
  * Compiler used: solc
  * Runtime target: EVM
  */
-contract OVM_CanonicalTransactionChain is iOVM_CanonicalTransactionChain, Lib_AddressResolver, OVM_Tokamak {
+contract OVM_CanonicalTransactionChain is
+iOVM_CanonicalTransactionChain, Lib_AddressResolver, OVM_Tokamak {
 
     /*************
      * Constants *
