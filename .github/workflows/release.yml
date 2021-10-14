@@ -83,8 +83,8 @@ jobs:
           file: ./ops/docker/Dockerfile.gas-oracle
           push: true
           tags: |
-            onthertech/optimism.gas-oracle:${{ steps.extractver.outputs.version }}
-            onthertech/optimism.gas-oracle:latest
+            onthertech/optimism.gasoracle:${{ steps.extractver.outputs.version }}
+            onthertech/optimism.gasoracle:latest
 
   # pushes the base builder image to dockerhub
   builder:
