@@ -34,5 +34,8 @@ COPY packages/contracts/src ./src
 COPY packages/contracts/test/helpers/constants.ts ./test/helpers/constants.ts
 COPY packages/contracts/scripts ./scripts
 
+# get contract-artifacts
+COPY --from=builder /optimism/packages/contracts/src/contract-artifacts.ts ./src
+
 COPY ./ops/scripts/deployer.sh .
 ENTRYPOINT yarn run build:dump && yarn run deploy
